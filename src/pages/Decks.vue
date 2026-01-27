@@ -1,0 +1,203 @@
+<script setup lang="ts">
+import { decks } from "@/pages/repo.ts"
+import { type IDeck, type ITag } from "@/types"
+import type { InputMenuItem } from "@nuxt/ui/components/InputMenu.vue"
+import type { TabsItem } from "@nuxt/ui/components/Tabs.vue"
+import { breakpointsTailwind, useBreakpoints, useElementBounding } from "@vueuse/core"
+import { computed, ref, useTemplateRef, watch } from "vue"
+
+const TabItem = {
+  all: "all",
+  favorite: "favorite"
+} as const
+
+type TTabItem = (typeof TabItem)[keyof typeof TabItem]
+
+const tabItems: TabsItem[] = [
+  {
+    label: "Все",
+    value: TabItem.all
+  },
+  {
+    label: "Избранное",
+    value: TabItem.favorite
+  }
+]
+
+const toolbarRef = useTemplateRef("toolbar")
+const { height: toolbarHeight } = useElementBounding(toolbarRef)
+
+const breakpoints = useBreakpoints(breakpointsTailwind)
+const isMobile = breakpoints.smaller("lg")
+
+const isArchiveOpen = ref<boolean>(false)
+const isToolbarOpen = ref<boolean>(false)
+const selectedDeck = ref<IDeck | null>()
+const selectedTab = ref<TTabItem>(TabItem.all)
+const selectedTags = ref<ITag[]>([])
+
+const filteredDecks = computed<IDeck[]>(() => {
+  const result = decks.filter(deck => !deck.isArchived) ?? []
+  if (selectedTab.value === TabItem.favorite) {
+    return result.filter(deck => deck.isFavorite) ?? []
+  }
+  return result
+})
+
+const archivedDecks = computed<IDeck[]>(() => {
+  const result = decks.filter(deck => deck.isArchived) ?? []
+  if (selectedTab.value === TabItem.favorite) {
+    return result.filter(deck => deck.isFavorite) ?? []
+  }
+  return result
+})
+
+const tagOptions = computed<InputMenuItem[]>(() => {
+  return [
+    ...new Set(
+      filteredDecks.value.flatMap(d =>
+        d.tags.map(t => ({
+          label: t.label,
+          value: t.label,
+          chip: { color: t.color }
+        }))
+      )
+    )
+  ]
+})
+
+const isDeckPanelOpen = computed({
+  get() {
+    return !!selectedDeck.value
+  },
+  set(value: boolean) {
+    if (!value) {
+      selectedDeck.value = null
+    }
+  }
+})
+
+watch(filteredDecks, () => {
+  if (!filteredDecks.value.find(deck => deck.id === selectedDeck.value?.id)) {
+    selectedDeck.value = null
+  }
+})
+</script>
+
+<template>
+  <UDashboardPanel id="decks" :default-size="25" :min-size="20" :max-size="30" resizable>
+    <UDashboardNavbar title="Колоды" class="z-10">
+      <!-- Count -->
+      <template #trailing>
+        <UBadge :label="isArchiveOpen ? archivedDecks.length : filteredDecks.length" variant="subtle" color="neutral" />
+      </template>
+      <!-- /Count -->
+
+      <!-- Tabs -->
+      <template #right>
+        <UTabs v-model="selectedTab" :items="tabItems" :content="false" size="xs" />
+        <UButton square variant="ghost" color="neutral" @click="isToolbarOpen = !isToolbarOpen">
+          <UIcon
+            name="i-lucide-chevron-up"
+            class="size-5 transition-transform"
+            :class="[isToolbarOpen ? 'rotate-180' : 'rotate-0']"
+          />
+        </UButton>
+      </template>
+      <!-- /Tabs -->
+    </UDashboardNavbar>
+
+    <!-- Panel Content -->
+    <div class="relative flex h-full flex-col overflow-auto">
+      <!-- Filters -->
+      <UDashboardToolbar
+        ref="toolbar"
+        class="absolute top-0 left-0 z-50 w-full flex-col gap-y-0 bg-(--ui-bg) py-3 transition-all duration-200"
+        :class="isToolbarOpen ? 'visible -translate-y-0 opacity-100' : 'invisible -translate-y-full opacity-0'"
+      >
+        <!-- Filter Tags -->
+        <div class="flex w-full items-center gap-x-2.5">
+          <USelectMenu
+            v-model="selectedTags"
+            :items="tagOptions"
+            multiple
+            :search-input="{
+              placeholder: 'Искать...',
+              icon: 'i-lucide-search'
+            }"
+            icon="i-lucide-tag"
+            placeholder="Фильтровать по тегам..."
+            class="w-full"
+          >
+            <template #empty>Ничего не найдено...</template>
+          </USelectMenu>
+          <UButton square variant="subtle" color="neutral">
+            <UIcon name="i-lucide-trash" class="text-muted size-4" />
+          </UButton>
+        </div>
+        <!-- /Filter Tags -->
+
+        <div class="mt-3 flex w-full items-center" :class="isArchiveOpen ? 'gap-x-2.5' : 'gap-x-4'">
+          <USwitch v-if="!isArchiveOpen" label="Архив?" checked-icon="i-lucide-check" />
+          <UInput icon="i-lucide-search" placeholder="Поиск..." class="w-full" />
+          <UButton
+            v-if="isArchiveOpen"
+            label="Очистить фильтры"
+            icon="i-lucide-funnel-x"
+            size="sm"
+            variant="ghost"
+            color="neutral"
+          />
+        </div>
+
+        <!-- Clear Filters -->
+        <UButton
+          v-if="!isArchiveOpen"
+          label="Очистить фильтры"
+          icon="i-lucide-funnel-x"
+          size="sm"
+          variant="ghost"
+          color="neutral"
+          class="mt-2.5 self-end"
+        />
+        <!-- /Clear Filters -->
+      </UDashboardToolbar>
+      <!-- /Filters -->
+
+      <!-- Decks -->
+      <DecksList
+        v-model:model-value="selectedDeck"
+        v-model:archive-open="isArchiveOpen"
+        :decks="filteredDecks"
+        :archived-decks="archivedDecks"
+        class="transition-[transform,margin] duration-200"
+        :style="{
+          marginTop: isToolbarOpen ? `${toolbarHeight}px` : '0'
+        }"
+      />
+      <!-- /Decks -->
+    </div>
+    <!-- /Panel Content -->
+  </UDashboardPanel>
+
+  <DecksItemView v-if="selectedDeck" :deck="selectedDeck" @close="selectedDeck = null" />
+  <div v-else class="hidden flex-1 items-center justify-center lg:flex">
+    <UIcon name="i-lucide-package" class="text-dimmed size-32" />
+  </div>
+
+  <USlideover v-if="isMobile" v-model:open="isDeckPanelOpen">
+    <template #content>
+      <DecksItemView v-if="selectedDeck" :deck="selectedDeck" @close="selectedDeck = null" />
+    </template>
+  </USlideover>
+</template>
+
+<style scoped>
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+}
+</style>
