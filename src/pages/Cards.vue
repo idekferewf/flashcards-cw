@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { decks as data } from "@/pages/repo.ts"
+import { DecksTD as data } from "@/store/temp-data.ts"
 import type { IDeck } from "@/types"
 import type { TableColumn } from "@nuxt/ui"
 import { useToast } from "@nuxt/ui/composables"

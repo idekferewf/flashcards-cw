@@ -1,10 +1,16 @@
 <script setup lang="ts">
-import { decks } from "@/pages/repo.ts"
+import { ROUTES } from "@/constants"
+import router from "@/router"
+import { useDeckStore } from "@/store/deck.store.ts"
 import { type IDeck, type ITag } from "@/types"
 import type { InputMenuItem } from "@nuxt/ui/components/InputMenu.vue"
 import type { TabsItem } from "@nuxt/ui/components/Tabs.vue"
 import { breakpointsTailwind, useBreakpoints, useElementBounding } from "@vueuse/core"
-import { computed, ref, useTemplateRef, watch } from "vue"
+import { computed, onMounted, ref, useTemplateRef, watch } from "vue"
+
+const props = defineProps<{
+  deckId?: string
+}>()
 
 const TabItem = {
   all: "all",
@@ -24,32 +30,31 @@ const tabItems: TabsItem[] = [
   }
 ]
 
+const store = useDeckStore()
+
 const toolbarRef = useTemplateRef("toolbar")
 const { height: toolbarHeight } = useElementBounding(toolbarRef)
-
 const breakpoints = useBreakpoints(breakpointsTailwind)
 const isMobile = breakpoints.smaller("lg")
 
 const isArchiveOpen = ref<boolean>(false)
 const isToolbarOpen = ref<boolean>(false)
-const selectedDeck = ref<IDeck | null>()
+const selectedDeck = ref<IDeck | null>(null)
 const selectedTab = ref<TTabItem>(TabItem.all)
 const selectedTags = ref<ITag[]>([])
 
 const filteredDecks = computed<IDeck[]>(() => {
-  const result = decks.filter(deck => !deck.isArchived) ?? []
   if (selectedTab.value === TabItem.favorite) {
-    return result.filter(deck => deck.isFavorite) ?? []
+    return store.activeDecks.filter(deck => deck.isFavorite) ?? []
   }
-  return result
+  return store.activeDecks
 })
 
 const archivedDecks = computed<IDeck[]>(() => {
-  const result = decks.filter(deck => deck.isArchived) ?? []
   if (selectedTab.value === TabItem.favorite) {
-    return result.filter(deck => deck.isFavorite) ?? []
+    return store.archivedDecks.filter(deck => deck.isFavorite) ?? []
   }
-  return result
+  return store.archivedDecks
 })
 
 const tagOptions = computed<InputMenuItem[]>(() => {
@@ -72,14 +77,36 @@ const isDeckPanelOpen = computed({
   },
   set(value: boolean) {
     if (!value) {
-      selectedDeck.value = null
+      closeDeck()
     }
   }
 })
 
-watch(filteredDecks, () => {
-  if (!filteredDecks.value.find(deck => deck.id === selectedDeck.value?.id)) {
-    selectedDeck.value = null
+const closeDeck = () => {
+  selectedDeck.value = null
+  router.replace({ name: ROUTES.DECKS.name })
+}
+
+watch([filteredDecks, archivedDecks], () => {
+  const deck = selectedDeck.value
+  if (!deck) return
+
+  const list = deck.isArchived ? archivedDecks.value : filteredDecks.value
+
+  if (!list.some(d => d.id === deck.id)) {
+    closeDeck()
+  }
+})
+
+onMounted(() => {
+  const deck = store.getDeckById(props.deckId)
+
+  if (deck) {
+    selectedDeck.value = deck
+  }
+
+  if (deck?.isArchived) {
+    isArchiveOpen.value = true
   }
 })
 </script>
@@ -112,7 +139,7 @@ watch(filteredDecks, () => {
       <!-- Filters -->
       <UDashboardToolbar
         ref="toolbar"
-        class="absolute top-0 left-0 z-50 w-full flex-col gap-y-0 bg-(--ui-bg) py-3 transition-all duration-200"
+        class="absolute top-0 left-0 z-50 w-full flex-col gap-y-0 py-3 transition-all duration-200"
         :class="isToolbarOpen ? 'visible -translate-y-0 opacity-100' : 'invisible -translate-y-full opacity-0'"
       >
         <!-- Filter Tags -->
@@ -165,36 +192,34 @@ watch(filteredDecks, () => {
       <!-- /Filters -->
 
       <!-- Decks -->
-      <DecksList
+      <DecksPanel
         v-model:model-value="selectedDeck"
         v-model:archive-open="isArchiveOpen"
         :decks="filteredDecks"
         :archived-decks="archivedDecks"
         class="transition-[transform,margin] duration-200"
-        :style="{
-          marginTop: isToolbarOpen ? `${toolbarHeight}px` : '0'
-        }"
+        :style="{ marginTop: isToolbarOpen ? `${toolbarHeight}px` : '0' }"
       />
       <!-- /Decks -->
     </div>
     <!-- /Panel Content -->
   </UDashboardPanel>
 
-  <DecksItemView v-if="selectedDeck" :deck="selectedDeck" @close="selectedDeck = null" />
+  <DeckDetails v-if="!isMobile && selectedDeck" :deck="selectedDeck" @close="closeDeck" />
   <div v-else class="hidden flex-1 items-center justify-center lg:flex">
     <UIcon name="i-lucide-package" class="text-dimmed size-32" />
   </div>
 
   <USlideover v-if="isMobile" v-model:open="isDeckPanelOpen">
     <template #content>
-      <DecksItemView v-if="selectedDeck" :deck="selectedDeck" @close="selectedDeck = null" />
+      <DeckDetails v-if="selectedDeck" :deck="selectedDeck" @close="closeDeck" />
     </template>
   </USlideover>
 </template>
 
 <style scoped>
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
 }
 
 ::-webkit-scrollbar-thumb {

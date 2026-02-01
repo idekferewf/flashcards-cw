@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { TAG_COLOR_CLASSES } from "@/constants"
 import type { IDeck } from "@/types"
 import { format, isToday } from "date-fns"
 import { ru } from "date-fns/locale"
@@ -12,12 +11,8 @@ defineProps<{
 
 <template>
   <div
-    class="group text-default cursor-pointer border-l-2 p-4 text-sm transition-colors sm:px-6"
-    :class="[
-      isSelected
-        ? 'border-primary bg-primary/[.04] dark:bg-primary/[.08]'
-        : 'border-bg hover:border-primary hover:bg-primary/[.02] dark:hover:bg-primary/5'
-    ]"
+    class="group text-default cursor-pointer border-l-2 p-4 text-sm hover:transition-colors sm:px-6"
+    :class="[isSelected ? 'border-primary bg-accented/40' : 'border-bg hover:border-primary hover:bg-accented/25']"
   >
     <!-- Header -->
     <div class="flex items-center justify-between font-semibold">
@@ -53,16 +48,7 @@ defineProps<{
     <!-- /Description -->
 
     <!-- Tags -->
-    <div v-if="deck.tags" class="mt-2 flex flex-wrap gap-2">
-      <code
-        v-for="tag in deck.tags"
-        :key="tag.id"
-        class="inline-block rounded-md border px-1.5 py-0.5 font-mono text-xs font-medium"
-        :class="[TAG_COLOR_CLASSES[tag.color]]"
-      >
-        <span class="mt-0.5 inline-block">{{ tag.label }}</span>
-      </code>
-    </div>
+    <TagList v-if="deck.tags.length" :tags="deck.tags" class="mt-2" />
     <!-- /Tags -->
   </div>
 </template>

@@ -1,13 +1,7 @@
-export type TTagColor = "info" | "success" | "warning" | "error" | "neutral"
-
-export interface ITag {
-  id: number
-  label: string
-  color: TTagColor
-}
+import type { ITag } from "@/types"
 
 export interface IDeck {
-  id: number
+  id: string
   name: string
   description?: string
   createdAt: string

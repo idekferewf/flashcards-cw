@@ -1,41 +1,34 @@
 import type { IDeck } from "@/types"
 import { defineStore } from "pinia"
 import { computed, ref } from "vue"
+import { DecksTD } from "./temp-data.ts"
 
-export const useDeckStore = defineStore("deck", () => {
-  const decks = ref<IDeck[]>([])
+export const useDeckStore = defineStore("decks", () => {
+  const decks = ref<IDeck[]>(DecksTD)
 
-  function loadFromLocalStorage() {
-    const raw = localStorage.getItem("decks")
-    if (raw) decks.value = JSON.parse(raw)
-  }
+  const activeDecks = computed(() => decks.value.filter(d => !d.isArchived))
 
-  function saveToLocalStorage() {
-    localStorage.setItem("decks", JSON.stringify(decks.value))
-  }
+  const archivedDecks = computed(() => decks.value.filter(d => d.isArchived))
 
-  function addDeck(name: string, description?: string) {
-    const newDeck: IDeck = {
-      id: crypto.randomUUID(),
-      name,
-      description,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }
+  function addDeck(newDeck: IDeck) {
     decks.value.push(newDeck)
-    saveToLocalStorage()
   }
 
   function removeDeck(id: string) {
     decks.value = decks.value.filter(d => d.id !== id)
-    saveToLocalStorage()
   }
 
-  const getDeckById = (id: string) => decks.value.find(d => d.id === id)
+  function getDeckById(id?: string) {
+    return decks.value.find(d => d.id === id) ?? null
+  }
 
-  const totalDecks = computed(() => decks.value.length)
-
-  loadFromLocalStorage()
-
-  return { decks, addDeck, removeDeck, getDeckById, totalDecks }
+  return {
+    decks,
+    addDeck,
+    activeDecks,
+    archivedDecks,
+    removeDeck,
+    getDeckById,
+    saveToIndexedDb: true
+  }
 })
