@@ -22,6 +22,7 @@ export interface ICard {
   front: string
   back: string
   tags?: ITag[]
+  isPinned?: boolean
 
   status?: CardStatus
   learningStepsCompleted?: number

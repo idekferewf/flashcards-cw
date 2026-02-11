@@ -151,7 +151,7 @@ useResizeObserver(scrollRef, () => {
   <div
     ref="scroll"
     class="relative h-full overflow-x-hidden overflow-y-auto overscroll-none"
-    :class="{ 'overflow-y-hidden pr-1.5': archiveOpen && hasScroll }"
+    :class="{ 'overflow-y-hidden pr-0.5': archiveOpen && hasScroll }"
     @wheel="onWheel"
   >
     <!-- Archive -->
@@ -185,7 +185,7 @@ useResizeObserver(scrollRef, () => {
       <div
         v-if="hasArchivedDecks"
         ref="archive"
-        class="bg-elevated dark:bg-muted/50 hover:bg-accented/50 dark:hover:bg-muted absolute right-0 left-0 z-10 flex cursor-pointer items-center justify-between px-5 py-3 transition-colors duration-300"
+        class="bg-muted/50 hover:bg-muted absolute right-0 left-0 z-10 flex cursor-pointer items-center justify-between px-5 py-3 transition-colors duration-300"
         :style="{ top: `-${archiveHeight}px` }"
         @click="archiveOpen = true"
       >
@@ -195,7 +195,7 @@ useResizeObserver(scrollRef, () => {
           </div>
           <div class="flex flex-col gap-y-0.5 text-sm font-semibold">
             <span>Архив</span>
-            <span class="text-muted line-clamp-1 font-medium break-all">{{ archivedDeckNames }}</span>
+            <span class="text-muted line-clamp-1 font-normal break-all">{{ archivedDeckNames }}</span>
           </div>
         </div>
         <span class="text-muted ms-3 text-xs">Открыть</span>

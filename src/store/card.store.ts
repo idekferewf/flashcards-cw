@@ -7,6 +7,7 @@ export const useCardStore = defineStore("cards", () => {
   CardsTD.forEach(card => {
     card.status = CardStatus.new
     card.dueAt = card.createdAt
+    card.isPinned = Math.random() > 0.5
   })
 
   const cards = ref<ICard[]>(CardsTD)
@@ -19,6 +20,17 @@ export const useCardStore = defineStore("cards", () => {
     cards.value = cards.value.filter(c => c.id !== id)
   }
 
+  function removeCards(ids: string[]) {
+    cards.value = cards.value.filter(c => !ids.includes(c.id))
+  }
+
+  function togglePin(cardId: string) {
+    const card = cards.value.find(c => c.id === cardId)
+    if (card) {
+      card.isPinned = !card.isPinned
+    }
+  }
+
   function getCardsByDeckId(deckId: string) {
     return cards.value.filter(c => c.deckId === deckId)
   }
@@ -27,6 +39,8 @@ export const useCardStore = defineStore("cards", () => {
     cards,
     addCard,
     removeCard,
+    removeCards,
+    togglePin,
     getCardsByDeckId,
     saveToIndexedDb: true
   }

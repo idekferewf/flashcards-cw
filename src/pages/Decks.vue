@@ -219,10 +219,11 @@ onMounted(() => {
 
 <style scoped>
 ::-webkit-scrollbar {
-  width: 4px;
+  width: 2px;
 }
 
 ::-webkit-scrollbar-thumb {
+  background: var(--ui-color-neutral-300);
   border-radius: 4px;
 }
 </style>

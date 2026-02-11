@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useCardStore } from "@/store/card.store.ts"
+import { useCardStore } from "@/store/card.store"
 import { type CardStatus, CardStatusLabels, type ICard, type IDeck } from "@/types"
 import type { TableColumn } from "@nuxt/ui"
 import { useToast } from "@nuxt/ui/composables"
@@ -9,6 +9,7 @@ import {
   type Row,
   type RowSelectionState,
   type SortingState,
+  type TableMeta,
   type VisibilityState
 } from "@tanstack/table-core"
 import { useClipboard } from "@vueuse/core"
@@ -23,22 +24,33 @@ const props = defineProps<{
 const TagList = resolveComponent("TagList")
 const UButton = resolveComponent("UButton")
 const UBadge = resolveComponent("UBadge")
+const UIcon = resolveComponent("UIcon")
 const UDropdownMenu = resolveComponent("UDropdownMenu")
 const UCheckbox = resolveComponent("UCheckbox")
 
 const { copy } = useClipboard()
 const toast = useToast()
-const store = useCardStore()
+const cardStore = useCardStore()
 
 const table = useTemplateRef("table")
 
-const sortingState = ref<SortingState>([{ id: "dueAt", desc: false }])
-const columnVisibilityState = ref<VisibilityState>()
+const deleteOpen = ref<boolean>(false)
+const cardToDelete = ref<ICard | null>(null)
+
+const sortingState = ref<SortingState>([
+  { id: "isPinned", desc: true },
+  { id: "dueAt", desc: false }
+])
+const columnVisibilityState = ref<VisibilityState>({ isPinned: false })
 const rowSelectionState = ref<RowSelectionState>()
 const paginationState = ref<PaginationState>({ pageIndex: 0, pageSize: 20 })
 
 const cards = computed(() => {
-  return store.getCardsByDeckId(props.deck.id)
+  return cardStore.getCardsByDeckId(props.deck.id)
+})
+
+const selectedCards = computed((): ICard[] => {
+  return table.value?.tableApi?.getFilteredSelectedRowModel().rows.map(r => r.original as ICard) ?? []
 })
 
 const front = computed({
@@ -51,6 +63,9 @@ const front = computed({
 })
 
 const getRowItems = (row: Row<ICard>) => {
+  const cardId = row.original.id,
+    pinned = row.original.isPinned
+
   return [
     {
       type: "label",
@@ -61,20 +76,23 @@ const getRowItems = (row: Row<ICard>) => {
       icon: "i-lucide-eye"
     },
     {
-      label: "Редактировать",
-      icon: "i-lucide-file-pen"
+      label: pinned ? "Открепить" : "Закрепить",
+      icon: pinned ? "i-lucide-pin-off" : "i-lucide-pin",
+      onSelect() {
+        cardStore.togglePin(cardId)
+      }
     },
     {
-      label: "Закрепить",
-      icon: "i-lucide-pin"
+      label: "Редактировать",
+      icon: "i-lucide-file-pen"
     },
     {
       label: "Копировать ID",
       icon: "i-lucide-copy",
       onSelect() {
-        copy(row.original.id)
+        copy(cardId)
         toast.add({
-          title: "Скопировано в буфер обмена",
+          title: "ID карточки скопирован",
           description: "Идентификатор карточки скопирован в буфер обмена."
         })
       }
@@ -87,10 +105,8 @@ const getRowItems = (row: Row<ICard>) => {
       icon: "i-lucide-trash",
       color: "error",
       onSelect() {
-        toast.add({
-          title: "Карточка удалена",
-          description: "Все данные о карточке были удалены."
-        })
+        deleteOpen.value = true
+        cardToDelete.value = row.original
       }
     }
   ]
@@ -106,6 +122,14 @@ const columnNames: Record<string, string> = {
 } as const
 
 const columns: TableColumn<ICard>[] = [
+  {
+    accessorKey: "isPinned",
+    enableSorting: true,
+    enableHiding: false,
+    size: 0,
+    header: "",
+    cell: () => null
+  },
   {
     id: "select",
     header: ({ table }) =>
@@ -125,11 +149,12 @@ const columns: TableColumn<ICard>[] = [
     accessorKey: "front",
     header: "Название",
     cell: ({ row }) => {
-      return h("div", { class: "flex items-center gap-3" }, [
-        h("div", undefined, [
-          h("p", { class: "font-medium text-highlighted" }, row.original.front),
-          row.original.tags ? h(TagList, { class: "mt-2 text-[10px] max-w-[400px]", tags: row.original.tags }) : null
-        ])
+      return h("div", { class: "flex flex-col" }, [
+        h("p", { class: "font-medium text-highlighted" }, [
+          row.original.front,
+          row.original.isPinned ? h(UIcon, { name: "i-lucide-pin", class: "text-dimmed inline ml-1.5" }) : undefined
+        ]),
+        row.original.tags ? h(TagList, { class: "mt-2 text-[10px] max-w-[400px]", tags: row.original.tags }) : undefined
       ])
     }
   },
@@ -165,7 +190,7 @@ const columns: TableColumn<ICard>[] = [
             ? "i-lucide-arrow-up-narrow-wide"
             : "i-lucide-arrow-down-wide-narrow"
           : "i-lucide-arrow-up-down",
-        class: "-mx-2.5",
+        class: "-mx-2.5 light:hover:bg-accented/75",
         onClick: () => column.toggleSorting(column.getIsSorted() === "asc")
       })
     },
@@ -182,9 +207,8 @@ const columns: TableColumn<ICard>[] = [
         h(
           UDropdownMenu,
           {
-            content: {
-              align: "end"
-            },
+            arrow: true,
+            content: { align: "end" },
             items: getRowItems(row)
           },
           () =>
@@ -199,10 +223,22 @@ const columns: TableColumn<ICard>[] = [
     }
   }
 ]
+
+const meta: TableMeta<ICard> = {
+  class: {
+    tr: (row: Row<ICard>) => {
+      if (row.original.isPinned) {
+        return "bg-elevated/15"
+      }
+      return ""
+    }
+  }
+}
 </script>
 
 <template>
   <div class="flex flex-wrap items-center justify-between gap-1.5">
+    <!-- Search -->
     <UInput
       v-model="front"
       class="w-full max-w-sm"
@@ -210,26 +246,22 @@ const columns: TableColumn<ICard>[] = [
       placeholder="Поиск по названию..."
       :ui="{ base: 'py-2' }"
     />
+    <!-- /Search -->
 
     <div class="flex flex-wrap items-center gap-1.5">
-      <!-- Delete -->
-      <!--      <DecksDeleteModal :count="table?.tableApi?.getFilteredSelectedRowModel().rows.length">-->
-      <!--        <UButton-->
-      <!--          v-if="table?.tableApi?.getFilteredSelectedRowModel().rows.length != 0"-->
-      <!--          label="Удалить"-->
-      <!--          color="error"-->
-      <!--          variant="subtle"-->
-      <!--          icon="i-lucide-trash"-->
-      <!--        >-->
-      <!--          <template #trailing>-->
-      <!--            <UKbd>-->
-      <!--              {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length }}-->
-      <!--            </UKbd>-->
-      <!--          </template>-->
-      <!--        </UButton>-->
-      <!--      </DecksDeleteModal>-->
-      <!-- /Delete -->
+      <!-- Multi delete modal -->
+      <CardsDeleteModal :cards="selectedCards">
+        <UButton v-if="selectedCards.length" label="Удалить" size="lg" color="error" variant="subtle" icon="i-lucide-trash">
+          <template #trailing>
+            <UKbd>
+              {{ selectedCards.length }}
+            </UKbd>
+          </template>
+        </UButton>
+      </CardsDeleteModal>
+      <!-- /Multi delete modal -->
 
+      <!-- Column visibility -->
       <UDropdownMenu
         :items="
           table?.tableApi
@@ -251,6 +283,7 @@ const columns: TableColumn<ICard>[] = [
       >
         <UButton label="Столбцы" size="lg" color="neutral" variant="outline" trailing-icon="i-lucide-settings-2" />
       </UDropdownMenu>
+      <!-- /Column visibility -->
     </div>
   </div>
 
@@ -264,14 +297,14 @@ const columns: TableColumn<ICard>[] = [
     :pagination-options="{ getPaginationRowModel: cards.length ? getPaginationRowModel() : null }"
     :data="cards"
     :columns="columns"
+    :meta="meta"
     class="cards-scrollbar shrink-0"
     :ui="{
       base: 'table-fixed border-separate border-spacing-0',
-      thead: '[&>tr]:bg-elevated dark:[&>tr]:bg-elevated/50 [&>tr]:after:content-none',
-      tbody:
-        '[&>tr]:last:[&>td]:border-b-0 [&>tr]:hover:bg-elevated/80 [&>tr]:focus-visible:bg-elevated/80 dark:[&>tr]:hover:bg-elevated/25 dark:[&>tr]:focus-visible:bg-elevated/25',
-      tr: 'cursor-pointer outline-none transition-colors duration-150 light:data-[selected=true]:bg-accented/35 light:data-[selected=true]:hover:bg-accented/35 dark:data-[selected=true]:hover:bg-elevated/50',
-      th: 'py-4 first:rounded-tl-lg last:rounded-tr-lg border-y border-default first:border-l last:border-r',
+      thead: '[&>tr]:bg-elevated/50 [&>tr]:after:content-none',
+      tbody: 'mt-10 [&>tr]:last:[&>td]:border-b-0 [&>tr]:hover:bg-elevated/35 [&>tr]:focus-visible:bg-elevated/35',
+      tr: 'cursor-pointer outline-none transition-colors duration-150 data-[selected=true]:hover:bg-elevated/50',
+      th: 'py-4 first:rounded-tl-lg last:rounded-tr-lg border-default border-b',
       td: 'border-b border-default',
       separator: 'h-0'
     }"
@@ -288,8 +321,7 @@ const columns: TableColumn<ICard>[] = [
   <!-- Pagination -->
   <div class="border-default mt-auto flex items-center justify-between gap-3 border-t pt-4">
     <div class="text-muted text-sm">
-      Выбрано {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} из
-      {{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }} строк.
+      Выбрано {{ selectedCards.length }} из {{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }} строк.
     </div>
 
     <div class="flex items-center gap-1.5">
@@ -302,4 +334,8 @@ const columns: TableColumn<ICard>[] = [
     </div>
   </div>
   <!-- /Pagination -->
+
+  <!-- Single delete modal -->
+  <CardDeleteModal v-model:card="cardToDelete" />
+  <!-- /Single delete modal -->
 </template>
