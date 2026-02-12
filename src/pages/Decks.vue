@@ -45,36 +45,38 @@ const selectedTab = ref<TTabItem>(TabItem.all)
 const selectedTags = ref<ITag[]>([])
 
 const filteredDecks = computed<IDeck[]>(() => {
-  let decks = store.activeDecks
-
-  if (selectedTab.value === TabItem.favorite) {
-    decks = decks.filter(deck => deck.isFavorite) ?? []
-  }
+  let decks = filterFavorite(store.activeDecks)
 
   if (hasArchive.value) {
     decks = decks.concat(archivedDecks.value)
   }
 
-  if (selectedTags.value.length > 0) {
-    decks = decks.filter(deck => selectedTags.value.every(selected => deck.tags.some(tag => tag.label === selected.label)))
+  if (!isArchiveOpen.value) {
+    decks = filterByTags(decks)
   }
 
   return decks
 })
 
 const archivedDecks = computed<IDeck[]>(() => {
-  if (selectedTab.value === TabItem.favorite) {
-    return store.archivedDecks.filter(deck => deck.isFavorite) ?? []
+  let decks = filterFavorite(store.archivedDecks)
+
+  if (isArchiveOpen.value) {
+    decks = filterByTags(decks)
   }
-  return store.archivedDecks
+
+  return decks
 })
 
 const tagOptions = computed<InputMenuItem[]>(() => {
   const map = new Map<string, InputMenuItem>()
 
-  let decks = store.activeDecks
-  if (hasArchive.value) {
-    decks = decks.concat(archivedDecks.value)
+  let decks = store.archivedDecks
+  if (!isArchiveOpen.value) {
+    decks = store.activeDecks
+    if (hasArchive.value) {
+      decks = decks.concat(archivedDecks.value)
+    }
   }
 
   decks.forEach(deck => {
@@ -103,6 +105,22 @@ const isDeckPanelOpen = computed({
   }
 })
 
+const filterFavorite = (decks: IDeck[]) => {
+  return selectedTab.value === TabItem.favorite
+    ? decks.filter(deck => deck.isFavorite)
+    : decks
+}
+
+const filterByTags = (decks: IDeck[]) => {
+  if (selectedTags.value.length === 0) return decks
+
+  return decks.filter(deck =>
+    selectedTags.value.every(selected =>
+      deck.tags.some(tag => tag.label === selected.label)
+    )
+  )
+}
+
 const closeDeck = () => {
   selectedDeck.value = null
   router.replace({ name: ROUTES.DECKS.name })
@@ -122,6 +140,10 @@ watch([filteredDecks, archivedDecks], () => {
   if (!list.some(d => d.id === deck.id)) {
     closeDeck()
   }
+})
+
+watch(isArchiveOpen, () => {
+  clearFilters()
 })
 
 onMounted(() => {
@@ -174,17 +196,14 @@ onMounted(() => {
             v-model="selectedTags"
             :items="tagOptions"
             multiple
-            :search-input="{
-              placeholder: 'Искать...',
-              icon: 'i-lucide-search'
-            }"
+            :search-input="{ placeholder: 'Искать...', icon: 'i-lucide-search' }"
             icon="i-lucide-tag"
             placeholder="Фильтровать по тегам..."
             class="w-full"
           >
             <template #empty>Ничего не найдено</template>
           </USelectMenu>
-          <UButton square variant="subtle" color="neutral">
+          <UButton square variant="subtle" color="neutral" :disabled="selectedTags.length === 0" @click="selectedTags = []">
             <UIcon name="i-lucide-trash" class="text-muted size-4" />
           </UButton>
         </div>

@@ -115,7 +115,9 @@ export const DecksTD: IDeck[] = [
     updatedAt: "2024-02-05T12:10:00Z",
     isArchived: true,
     isFavorite: false,
-    tags: []
+    tags: [
+      { id: 1, label: "http", color: "info" }
+    ]
   },
   {
     id: "12",
@@ -133,7 +135,7 @@ export const DecksTD: IDeck[] = [
     createdAt: "2024-02-06T10:00:00Z",
     updatedAt: "2024-02-06T10:00:00Z",
     isArchived: true,
-    isFavorite: true,
+    isFavorite: false,
     tags: []
   },
   {

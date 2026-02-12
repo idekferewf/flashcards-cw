@@ -134,6 +134,12 @@ const moveSelection = (direction: 1 | -1) => {
   selectedDeck.value = deck
 }
 
+watch(() => props.archivedDecks, () => {
+  if (!props.archivedDecks.length) {
+    unlockArchive()
+  }
+})
+
 defineShortcuts({
   arrowdown: () => moveSelection(1),
   arrowup: () => moveSelection(-1)
@@ -203,7 +209,10 @@ useResizeObserver(scrollRef, () => {
       <!-- /Archive Button -->
 
       <!-- Decks -->
-      <DeckList ref="activeListRef" :decks :selected-id="selectedDeck?.id" @select="deck => selectDeck(deck)" />
+      <DeckList v-if="decks.length" ref="activeListRef" :decks :selected-id="selectedDeck?.id" @select="deck => selectDeck(deck)" />
+      <div v-else class="flex items-center w-full justify-center gap-x-2 text-default text-center px-4 sm:px-6 py-6 text-sm">
+        Ничего не найдено
+      </div>
       <!-- /Decks -->
     </div>
   </div>
