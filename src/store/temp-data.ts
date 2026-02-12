@@ -34,7 +34,10 @@ export const DecksTD: IDeck[] = [
     updatedAt: "2024-01-15T16:10:00Z",
     isArchived: false,
     isFavorite: true,
-    tags: [{ id: 1, label: "vue", color: "success" }]
+    tags: [
+      { id: 1, label: "vue", color: "success" },
+      { id: 2, label: "javascript", color: "warning" }
+    ]
   },
   {
     id: "4",

@@ -93,7 +93,8 @@ const getRowItems = (row: Row<ICard>) => {
         copy(cardId)
         toast.add({
           title: "ID карточки скопирован",
-          description: "Идентификатор карточки скопирован в буфер обмена."
+          description: "Идентификатор карточки скопирован в буфер обмена.",
+          icon: "i-lucide-copy"
         })
       }
     },
@@ -294,7 +295,7 @@ const meta: TableMeta<ICard> = {
     v-model:column-visibility="columnVisibilityState"
     v-model:row-selection="rowSelectionState"
     v-model:pagination="paginationState"
-    :pagination-options="{ getPaginationRowModel: cards.length ? getPaginationRowModel() : null }"
+    :pagination-options="{ getPaginationRowModel: cards.length ? getPaginationRowModel() : undefined }"
     :data="cards"
     :columns="columns"
     :meta="meta"
@@ -302,11 +303,13 @@ const meta: TableMeta<ICard> = {
     :ui="{
       base: 'table-fixed border-separate border-spacing-0',
       thead: '[&>tr]:bg-elevated/50 [&>tr]:after:content-none',
-      tbody: 'mt-10 [&>tr]:last:[&>td]:border-b-0 [&>tr]:hover:bg-elevated/35 [&>tr]:focus-visible:bg-elevated/35',
+      tbody:
+        'mt-10 [&>tr]:last:[&>td]:border-b-0 [&>tr:not(:has(td[data-slot=empty]))]:hover:bg-elevated/35 [&>tr:not(:has(td[data-slot=empty]))]:focus-visible:bg-elevated/35',
       tr: 'cursor-pointer outline-none transition-colors duration-150 data-[selected=true]:hover:bg-elevated/50',
       th: 'py-4 first:rounded-tl-lg last:rounded-tr-lg border-default border-b',
       td: 'border-b border-default',
-      separator: 'h-0'
+      separator: 'h-0',
+      empty: 'hover:bg-transparent'
     }"
   >
     <template #empty>

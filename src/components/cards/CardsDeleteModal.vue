@@ -26,8 +26,7 @@ const onSubmit = () => {
   toast.add({
     title: "Карточки удалены",
     description: "Выбранные карточки безвозвратно удалены.",
-    icon: "i-lucide-trash",
-    color: "neutral"
+    icon: "i-lucide-trash"
   })
 }
 

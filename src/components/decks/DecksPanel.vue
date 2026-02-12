@@ -157,7 +157,7 @@ useResizeObserver(scrollRef, () => {
     <!-- Archive -->
     <div
       class="bg-default absolute top-0 left-0 z-50 flex h-full w-full flex-col transition-transform duration-150 focus:outline-none"
-      :class="[archiveOpen ? '-translate-x-0' : '-translate-x-full']"
+      :class="[archiveOpen ? 'translate-x-0' : '-translate-x-full']"
     >
       <!-- Archive Header -->
       <div class="border-b-default flex min-h-16 items-center justify-between gap-1.5 border-b p-4 sm:px-6">

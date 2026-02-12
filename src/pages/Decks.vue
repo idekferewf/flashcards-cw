@@ -39,15 +39,27 @@ const isMobile = breakpoints.smaller("lg")
 
 const isArchiveOpen = ref<boolean>(false)
 const isToolbarOpen = ref<boolean>(false)
+const hasArchive = ref<boolean>(false)
 const selectedDeck = ref<IDeck | null>(null)
 const selectedTab = ref<TTabItem>(TabItem.all)
 const selectedTags = ref<ITag[]>([])
 
 const filteredDecks = computed<IDeck[]>(() => {
+  let decks = store.activeDecks
+
   if (selectedTab.value === TabItem.favorite) {
-    return store.activeDecks.filter(deck => deck.isFavorite) ?? []
+    decks = decks.filter(deck => deck.isFavorite) ?? []
   }
-  return store.activeDecks
+
+  if (hasArchive.value) {
+    decks = decks.concat(archivedDecks.value)
+  }
+
+  if (selectedTags.value.length > 0) {
+    decks = decks.filter(deck => selectedTags.value.every(selected => deck.tags.some(tag => tag.label === selected.label)))
+  }
+
+  return decks
 })
 
 const archivedDecks = computed<IDeck[]>(() => {
@@ -58,17 +70,26 @@ const archivedDecks = computed<IDeck[]>(() => {
 })
 
 const tagOptions = computed<InputMenuItem[]>(() => {
-  return [
-    ...new Set(
-      filteredDecks.value.flatMap(d =>
-        d.tags.map(t => ({
-          label: t.label,
-          value: t.label,
-          chip: { color: t.color }
-        }))
-      )
-    )
-  ]
+  const map = new Map<string, InputMenuItem>()
+
+  let decks = store.activeDecks
+  if (hasArchive.value) {
+    decks = decks.concat(archivedDecks.value)
+  }
+
+  decks.forEach(deck => {
+    deck.tags.forEach(tag => {
+      if (!map.has(tag.label)) {
+        map.set(tag.label, {
+          label: tag.label,
+          value: tag.label,
+          chip: { color: tag.color }
+        })
+      }
+    })
+  })
+
+  return Array.from(map.values())
 })
 
 const isDeckPanelOpen = computed({
@@ -85,6 +106,11 @@ const isDeckPanelOpen = computed({
 const closeDeck = () => {
   selectedDeck.value = null
   router.replace({ name: ROUTES.DECKS.name })
+}
+
+const clearFilters = () => {
+  hasArchive.value = false
+  selectedTags.value = []
 }
 
 watch([filteredDecks, archivedDecks], () => {
@@ -140,7 +166,7 @@ onMounted(() => {
       <UDashboardToolbar
         ref="toolbar"
         class="absolute top-0 left-0 z-50 w-full flex-col gap-y-0 py-3 transition-all duration-200"
-        :class="isToolbarOpen ? 'visible -translate-y-0 opacity-100' : 'invisible -translate-y-full opacity-0'"
+        :class="isToolbarOpen ? 'visible translate-y-0 opacity-100' : 'invisible -translate-y-full opacity-0'"
       >
         <!-- Filter Tags -->
         <div class="flex w-full items-center gap-x-2.5">
@@ -156,7 +182,7 @@ onMounted(() => {
             placeholder="Фильтровать по тегам..."
             class="w-full"
           >
-            <template #empty>Ничего не найдено...</template>
+            <template #empty>Ничего не найдено</template>
           </USelectMenu>
           <UButton square variant="subtle" color="neutral">
             <UIcon name="i-lucide-trash" class="text-muted size-4" />
@@ -165,7 +191,7 @@ onMounted(() => {
         <!-- /Filter Tags -->
 
         <div class="mt-3 flex w-full items-center" :class="isArchiveOpen ? 'gap-x-2.5' : 'gap-x-4'">
-          <USwitch v-if="!isArchiveOpen" label="Архив?" checked-icon="i-lucide-check" />
+          <USwitch v-if="!isArchiveOpen" v-model="hasArchive" label="Архив?" checked-icon="i-lucide-check" />
           <UInput icon="i-lucide-search" placeholder="Поиск..." class="w-full" />
           <UButton
             v-if="isArchiveOpen"
@@ -174,6 +200,7 @@ onMounted(() => {
             size="sm"
             variant="ghost"
             color="neutral"
+            @click="clearFilters"
           />
         </div>
 
@@ -186,6 +213,7 @@ onMounted(() => {
           variant="ghost"
           color="neutral"
           class="mt-2.5 self-end"
+          @click="clearFilters"
         />
         <!-- /Clear Filters -->
       </UDashboardToolbar>
