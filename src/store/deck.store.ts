@@ -6,9 +6,9 @@ import { DecksTD } from "./temp-data.ts"
 export const useDeckStore = defineStore("decks", () => {
   const decks = ref<IDeck[]>(DecksTD)
 
-  const activeDecks = computed(() => decks.value.filter(d => !d.isArchived))
+  const activeDecks = computed<IDeck[]>(() => decks.value.filter(d => !d.isArchived))
 
-  const archivedDecks = computed(() => decks.value.filter(d => d.isArchived))
+  const archivedDecks = computed<IDeck[]>(() => decks.value.filter(d => d.isArchived))
 
   function addDeck(newDeck: IDeck) {
     decks.value.push(newDeck)
@@ -24,9 +24,9 @@ export const useDeckStore = defineStore("decks", () => {
 
   return {
     decks,
-    addDeck,
     activeDecks,
     archivedDecks,
+    addDeck,
     removeDeck,
     getDeckById,
     saveToIndexedDb: true

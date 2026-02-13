@@ -115,9 +115,7 @@ export const DecksTD: IDeck[] = [
     updatedAt: "2024-02-05T12:10:00Z",
     isArchived: true,
     isFavorite: false,
-    tags: [
-      { id: 1, label: "http", color: "info" }
-    ]
+    tags: [{ id: 1, label: "http", color: "info" }]
   },
   {
     id: "12",

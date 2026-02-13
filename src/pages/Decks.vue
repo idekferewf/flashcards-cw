@@ -40,22 +40,25 @@ const isMobile = breakpoints.smaller("lg")
 const isArchiveOpen = ref<boolean>(false)
 const isToolbarOpen = ref<boolean>(false)
 const hasArchive = ref<boolean>(false)
+const search = ref<string>("")
 const selectedDeck = ref<IDeck | null>(null)
 const selectedTab = ref<TTabItem>(TabItem.all)
 const selectedTags = ref<ITag[]>([])
 
 const filteredDecks = computed<IDeck[]>(() => {
-  let decks = filterFavorite(store.activeDecks)
-
+  let decks = store.activeDecks
   if (hasArchive.value) {
-    decks = decks.concat(archivedDecks.value)
+    decks = decks.concat(store.archivedDecks)
   }
+
+  decks = filterFavorite(decks)
 
   if (!isArchiveOpen.value) {
     decks = filterByTags(decks)
+    decks = filterBySearch(decks)
   }
 
-  return decks
+  return sortDecksByUpdatedAt(decks)
 })
 
 const archivedDecks = computed<IDeck[]>(() => {
@@ -63,9 +66,10 @@ const archivedDecks = computed<IDeck[]>(() => {
 
   if (isArchiveOpen.value) {
     decks = filterByTags(decks)
+    decks = filterBySearch(decks)
   }
 
-  return decks
+  return sortDecksByUpdatedAt(decks)
 })
 
 const tagOptions = computed<InputMenuItem[]>(() => {
@@ -106,19 +110,30 @@ const isDeckPanelOpen = computed({
 })
 
 const filterFavorite = (decks: IDeck[]) => {
-  return selectedTab.value === TabItem.favorite
-    ? decks.filter(deck => deck.isFavorite)
-    : decks
+  return selectedTab.value === TabItem.favorite ? decks.filter(deck => deck.isFavorite) : decks
 }
 
 const filterByTags = (decks: IDeck[]) => {
   if (selectedTags.value.length === 0) return decks
 
-  return decks.filter(deck =>
-    selectedTags.value.every(selected =>
-      deck.tags.some(tag => tag.label === selected.label)
-    )
-  )
+  return decks.filter(deck => selectedTags.value.every(selected => deck.tags.some(tag => tag.label === selected.label)))
+}
+
+const filterBySearch = (decks: IDeck[]) => {
+  const searchValue = search.value?.trim().toLowerCase()
+
+  if (!searchValue) return decks
+
+  return decks.filter(deck => {
+    const deckName = deck.name.toLowerCase()
+    const deckDescription = deck.description?.toLowerCase() || ""
+
+    return deckName.includes(searchValue) || deckDescription.includes(searchValue)
+  })
+}
+
+const sortDecksByUpdatedAt = (decks: IDeck[]) => {
+  return decks.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
 }
 
 const closeDeck = () => {
@@ -127,20 +142,10 @@ const closeDeck = () => {
 }
 
 const clearFilters = () => {
+  search.value = ""
   hasArchive.value = false
   selectedTags.value = []
 }
-
-watch([filteredDecks, archivedDecks], () => {
-  const deck = selectedDeck.value
-  if (!deck) return
-
-  const list = deck.isArchived ? archivedDecks.value : filteredDecks.value
-
-  if (!list.some(d => d.id === deck.id)) {
-    closeDeck()
-  }
-})
 
 watch(isArchiveOpen, () => {
   clearFilters()
@@ -211,7 +216,7 @@ onMounted(() => {
 
         <div class="mt-3 flex w-full items-center" :class="isArchiveOpen ? 'gap-x-2.5' : 'gap-x-4'">
           <USwitch v-if="!isArchiveOpen" v-model="hasArchive" label="Архив?" checked-icon="i-lucide-check" />
-          <UInput icon="i-lucide-search" placeholder="Поиск..." class="w-full" />
+          <UInput v-model="search" icon="i-lucide-search" placeholder="Поиск..." class="w-full" />
           <UButton
             v-if="isArchiveOpen"
             label="Очистить фильтры"

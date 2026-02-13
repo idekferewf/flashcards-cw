@@ -313,7 +313,7 @@ const meta: TableMeta<ICard> = {
     }"
   >
     <template #empty>
-      <div class="flex w-full flex-col items-center justify-center gap-3.5">
+      <div class="flex w-full flex-col items-center justify-center gap-2.5">
         <span>Не найдено ни одной карточки.</span>
         <UButton icon="i-lucide-plus" label="Добавить карточку" size="sm" color="neutral" />
       </div>
