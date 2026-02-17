@@ -229,7 +229,7 @@ const meta: TableMeta<ICard> = {
   class: {
     tr: (row: Row<ICard>) => {
       if (row.original.isPinned) {
-        return "bg-elevated/15"
+        return "bg-elevated/20"
       }
       return ""
     }

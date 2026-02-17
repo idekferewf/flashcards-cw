@@ -51,7 +51,7 @@ watch(open, value => {
     v-model:open="open"
     :title="title"
     :description="`Вы точно уверены? Карточки ниже будут безвозвратно удалены.`"
-    :ui="{ body: 'pt-1.5 sm:pt-2.5' }"
+    :ui="{ body: 'pt-0.5 sm:pt-1.5' }"
   >
     <!-- Trigger -->
     <slot />

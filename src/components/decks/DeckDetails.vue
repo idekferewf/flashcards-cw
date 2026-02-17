@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ROUTES } from "@/constants"
+import { useDeckStore } from "@/store/deck.store"
 import type { IDeck } from "@/types"
 import type { DropdownMenuItem, NavigationMenuItem } from "@nuxt/ui"
-import { computed } from "vue"
+import { computed, ref } from "vue"
 
 const props = defineProps<{
   deck: IDeck
@@ -10,12 +11,47 @@ const props = defineProps<{
 
 const emits = defineEmits(["close"])
 
+const toast = useToast()
+const deckStore = useDeckStore()
+
+const deckToDelete = ref<IDeck | null>(null)
+
+const toggleFavorite = () => {
+  const wasFavorite = props.deck.isFavorite
+  deckStore.toggleDeckFlag(props.deck.id, "isFavorite")
+
+  toast.add({
+    title: wasFavorite ? "Колода удалена из избранного" : "Колода добавлена в избранное",
+    icon: wasFavorite ? "i-lucide-star-off" : "i-lucide-star",
+    color: wasFavorite ? "neutral" : "warning",
+    duration: 2000
+  })
+}
+
+const toggleArchived = () => {
+  const wasArchived = props.deck.isArchived
+  deckStore.toggleDeckFlag(props.deck.id, "isArchived")
+
+  toast.add({
+    title: wasArchived ? "Колода убрана из архива" : "Колода помещена в архив",
+    icon: wasArchived ? "i-lucide-archive-x" : "i-lucide-archive-restore",
+    duration: 2000
+  })
+}
+
+const openDeleteModal = () => {
+  deckToDelete.value = props.deck
+}
+
 const dropdownItems: DropdownMenuItem[] = [
   {
     label: "Удалить",
     icon: "i-lucide-trash",
     color: "error",
-    kbds: ["del"]
+    kbds: ["del"],
+    onSelect: () => {
+      openDeleteModal()
+    }
   }
 ]
 
@@ -38,7 +74,8 @@ const toolbarLinks = computed<NavigationMenuItem[]>(() => [
 ])
 
 defineShortcuts({
-  escape: () => emits("close")
+  escape: () => emits("close"),
+  delete: () => openDeleteModal()
 })
 </script>
 
@@ -46,16 +83,18 @@ defineShortcuts({
   <UDashboardPanel>
     <template #header>
       <UDashboardNavbar :toggle="false">
+        <!-- Name -->
+        <template #leading>
+          <UButton icon="i-lucide-x" color="neutral" variant="ghost" class="-ms-1.5" @click="emits('close')" />
+        </template>
         <template #title>
           <h1>{{ deck.name }}</h1>
           <TagList v-if="deck.tags.length" :tags="deck.tags.slice(0, 4)" class="ml-1.5 gap-1.5 truncate text-[11px]" />
           <span v-if="deck.tags.length > 4" class="text-toned ml-0.5">...</span>
         </template>
+        <!-- /Name -->
 
-        <template #leading>
-          <UButton icon="i-lucide-x" color="neutral" variant="ghost" class="-ms-1.5" @click="emits('close')" />
-        </template>
-
+        <!-- Right actions -->
         <template #right>
           <UButton icon="i-lucide-square-pen" color="neutral" variant="ghost">
             Редактировать
@@ -63,17 +102,29 @@ defineShortcuts({
           </UButton>
 
           <UTooltip text="Архивировать">
-            <UButton square icon="i-lucide-archive" color="neutral" :variant="deck.isArchived ? 'subtle' : 'ghost'" />
+            <UButton
+              square
+              icon="i-lucide-archive"
+              color="neutral"
+              :variant="deck.isArchived ? 'subtle' : 'ghost'"
+              @click="toggleArchived"
+            />
           </UTooltip>
 
           <UTooltip text="Добавить в избранное">
-            <UButton icon="i-lucide-star" color="neutral" :variant="deck.isFavorite ? 'subtle' : 'ghost'" />
+            <UButton
+              icon="i-lucide-star"
+              color="neutral"
+              :variant="deck.isFavorite ? 'subtle' : 'ghost'"
+              @click="toggleFavorite"
+            />
           </UTooltip>
 
           <UDropdownMenu :modal="false" arrow :content="{ align: 'end', sideOffset: 4 }" :items="dropdownItems">
             <UButton icon="i-lucide-ellipsis" color="neutral" variant="ghost" />
           </UDropdownMenu>
         </template>
+        <!-- /Right actions -->
       </UDashboardNavbar>
 
       <UDashboardToolbar>
@@ -85,6 +136,10 @@ defineShortcuts({
       <RouterView v-slot="{ Component }">
         <component :is="Component" :deck="deck" />
       </RouterView>
+
+      <!-- Delete modal -->
+      <DeckDeleteModal v-model:deck="deckToDelete" />
+      <!-- /Delete modal -->
     </template>
   </UDashboardPanel>
 </template>

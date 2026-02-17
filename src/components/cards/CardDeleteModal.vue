@@ -38,7 +38,11 @@ watch(card, value => {
 </script>
 
 <template>
-  <UModal v-model:open="open" title="Подтверждение удаления карточки">
+  <UModal
+    v-model:open="open"
+    title="Удаление карточки"
+    :ui="{ description: 'mt-2', content: 'divide-none', body: '!pt-0 sm:pb-5' }"
+  >
     <!-- Trigger -->
     <slot />
     <!-- /Trigger -->

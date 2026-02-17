@@ -7,7 +7,6 @@ export const useDeckStore = defineStore("decks", () => {
   const decks = ref<IDeck[]>(DecksTD)
 
   const activeDecks = computed<IDeck[]>(() => decks.value.filter(d => !d.isArchived))
-
   const archivedDecks = computed<IDeck[]>(() => decks.value.filter(d => d.isArchived))
 
   function addDeck(newDeck: IDeck) {
@@ -18,8 +17,15 @@ export const useDeckStore = defineStore("decks", () => {
     decks.value = decks.value.filter(d => d.id !== id)
   }
 
-  function getDeckById(id?: string) {
+  function getDeckById(id?: string): IDeck | null {
     return decks.value.find(d => d.id === id) ?? null
+  }
+
+  function toggleDeckFlag(id: string, key: "isFavorite" | "isArchived") {
+    const deck = decks.value.find(d => d.id === id)
+    if (deck) {
+      deck[key] = !deck[key]
+    }
   }
 
   return {
@@ -29,6 +35,7 @@ export const useDeckStore = defineStore("decks", () => {
     addDeck,
     removeDeck,
     getDeckById,
+    toggleDeckFlag,
     saveToIndexedDb: true
   }
 })
