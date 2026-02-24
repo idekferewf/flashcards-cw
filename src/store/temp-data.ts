@@ -1,4 +1,4 @@
-import { type ICard, type IDeck } from "@/types"
+import { CardStatus, type ICard, type IDeck } from "@/types"
 
 export const DecksTD: IDeck[] = [
   {
@@ -355,6 +355,7 @@ export const CardsTD: ICard[] = [
   {
     id: "24",
     deckId: "7",
+    status: CardStatus.review,
     front: "Как центрировать элемент по вертикали и горизонтали в Flexbox?",
     back: "display: flex; justify-content: center; align-items: center;",
     createdAt: "2024-01-21T16:45:00Z"
@@ -363,6 +364,7 @@ export const CardsTD: ICard[] = [
     id: "25",
     deckId: "7",
     front: "Что такое CSS Grid области (grid-areas)?",
+    status: CardStatus.relearning,
     back: "Именованные области в Grid-контейнере для позиционирования элементов",
     tags: [
       { id: 15, label: "css", color: "info" },

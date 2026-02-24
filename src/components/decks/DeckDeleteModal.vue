@@ -1,14 +1,17 @@
 <script setup lang="ts">
+import { useCardStore } from "@/store/card.store.ts"
 import { useDeckStore } from "@/store/deck.store"
-import type { IDeck } from "@/types"
+import type { ICard, IDeck } from "@/types"
 import { computed, h, ref, watch } from "vue"
 
 const deck = defineModel<IDeck | null>("deck")
 
 const toast = useToast()
 const deckStore = useDeckStore()
+const cardStore = useCardStore()
 
 const deckName = ref<string>()
+const deckCards = ref<ICard[]>([])
 
 const open = computed({
   get: () => deck.value !== null,
@@ -37,7 +40,10 @@ const onSubmit = () => {
 }
 
 watch(deck, value => {
-  if (value) deckName.value = value.name
+  if (value) {
+    deckName.value = value.name
+    deckCards.value = cardStore.getCardsByDeckId(value.id)
+  }
 })
 </script>
 
@@ -52,11 +58,27 @@ watch(deck, value => {
     <!-- /Trigger -->
 
     <template #description>
-      Вы точно уверены? Колода <span class="underline">{{ deckName }}</span> будет удалена без возможности восстановления.
+      Вы точно уверены? Колода <u>{{ deckName }}</u> будет удалена без возможности восстановления.
+      <span v-if="deckCards">
+        Перечисленные ниже карточки (<u>{{ deckCards.length }}</u
+        >) также будут удалены:
+      </span>
     </template>
-    <!-- TODO: СДЕЛАТЬ ОТОБРАЖЕНИЕ КОЛИЧЕСТВО КАРТОЧЕК ДЛЯ УДАЛЕНИЯ -->
 
     <template #body>
+      <!-- Cards -->
+      <div v-if="deckCards" class="max-h-72 overflow-y-auto">
+        <div
+          v-for="card in deckCards"
+          :key="card.id"
+          class="group border-default relative border-t py-3.5 first:border-0 first:pt-0.5"
+        >
+          <span class="text-sm">{{ card.front }}</span>
+          <TagList v-if="card.tags" :tags="card.tags" class="mt-1 text-[10px]" />
+        </div>
+      </div>
+      <!-- /Cards -->
+
       <div class="flex justify-end gap-2">
         <UButton label="Отмена" color="neutral" variant="subtle" class="px-4" @click="open = false" />
         <UButton label="Удалить" color="error" variant="solid" class="px-4" @click="onSubmit" />
@@ -64,3 +86,14 @@ watch(deck, value => {
     </template>
   </UModal>
 </template>
+
+<style scoped>
+::-webkit-scrollbar {
+  width: 2px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--ui-color-neutral-300);
+  border-radius: 4px;
+}
+</style>

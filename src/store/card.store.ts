@@ -5,7 +5,9 @@ import { ref } from "vue"
 
 export const useCardStore = defineStore("cards", () => {
   CardsTD.forEach(card => {
-    card.status = CardStatus.new
+    if (!card.status) {
+      card.status = CardStatus.new
+    }
     card.dueAt = card.createdAt
     card.isPinned = Math.random() > 0.5
   })

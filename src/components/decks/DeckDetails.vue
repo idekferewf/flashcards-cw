@@ -74,7 +74,7 @@ const toolbarLinks = computed<NavigationMenuItem[]>(() => [
 ])
 
 defineShortcuts({
-  escape: () => emits("close"),
+  ctrl_escape: () => emits("close"),
   delete: () => openDeleteModal()
 })
 </script>
@@ -85,7 +85,9 @@ defineShortcuts({
       <UDashboardNavbar :toggle="false">
         <!-- Name -->
         <template #leading>
-          <UButton icon="i-lucide-x" color="neutral" variant="ghost" class="-ms-1.5" @click="emits('close')" />
+          <UTooltip text="Закрыть колоду" :kbds="['ctrl', 'escape']">
+            <UButton icon="i-lucide-x" color="neutral" variant="ghost" class="-ms-1.5" @click="emits('close')" />
+          </UTooltip>
         </template>
         <template #title>
           <h1>{{ deck.name }}</h1>

@@ -2,8 +2,7 @@
 import { ROUTES } from "@/constants"
 import router from "@/router"
 import { useDeckStore } from "@/store/deck.store.ts"
-import { type IDeck, type ITag } from "@/types"
-import type { InputMenuItem } from "@nuxt/ui/components/InputMenu.vue"
+import { type IDeck } from "@/types"
 import type { TabsItem } from "@nuxt/ui/components/Tabs.vue"
 import { breakpointsTailwind, useBreakpoints, useElementBounding } from "@vueuse/core"
 import { computed, onMounted, ref, useTemplateRef, watch } from "vue"
@@ -43,7 +42,7 @@ const hasArchive = ref<boolean>(false)
 const search = ref<string>("")
 const selectedDeck = ref<IDeck | null>(null)
 const selectedTab = ref<TTabItem>(TabItem.all)
-const selectedTags = ref<ITag[]>([])
+const selectedTags = ref<string[]>([])
 
 const filteredDecks = computed<IDeck[]>(() => {
   let decks = store.activeDecks
@@ -72,8 +71,8 @@ const archivedDecks = computed<IDeck[]>(() => {
   return sortDecksByUpdatedAt(decks)
 })
 
-const tagOptions = computed<InputMenuItem[]>(() => {
-  const map = new Map<string, InputMenuItem>()
+const tagOptions = computed(() => {
+  const map = new Map()
 
   let decks = store.archivedDecks
   if (!isArchiveOpen.value) {
@@ -116,7 +115,7 @@ const filterFavorite = (decks: IDeck[]) => {
 const filterByTags = (decks: IDeck[]) => {
   if (selectedTags.value.length === 0) return decks
 
-  return decks.filter(deck => selectedTags.value.every(selected => deck.tags.some(tag => tag.label === selected.label)))
+  return decks.filter(deck => selectedTags.value.every(selected => deck.tags.some(tag => tag.label === selected)))
 }
 
 const filterBySearch = (decks: IDeck[]) => {
@@ -200,6 +199,7 @@ onMounted(() => {
           <USelectMenu
             v-model="selectedTags"
             :items="tagOptions"
+            value-key="value"
             multiple
             :search-input="{ placeholder: 'Искать...', icon: 'i-lucide-search' }"
             icon="i-lucide-tag"

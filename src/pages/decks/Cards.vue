@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useCardStore } from "@/store/card.store"
-import { type CardStatus, CardStatusLabels, type ICard, type IDeck } from "@/types"
+import { CardStatus, CardStatusLabels, type ICard, type IDeck } from "@/types"
 import type { TableColumn } from "@nuxt/ui"
 import { useToast } from "@nuxt/ui/composables"
 import {
@@ -51,6 +51,15 @@ const cards = computed(() => {
 
 const selectedCards = computed((): ICard[] => {
   return table.value?.tableApi?.getFilteredSelectedRowModel().rows.map(r => r.original as ICard) ?? []
+})
+
+const selectedStatuses = computed<string[]>({
+  get: (): string[] => {
+    return table.value?.tableApi?.getColumn("status")?.getFilterValue() as string[] | []
+  },
+  set: (items: string[]) => {
+    table.value?.tableApi?.getColumn("status")?.setFilterValue(items.length ? items : undefined)
+  }
 })
 
 const front = computed({
@@ -113,6 +122,29 @@ const getRowItems = (row: Row<ICard>) => {
   ]
 }
 
+const statusOptions = [
+  {
+    label: CardStatusLabels.new,
+    value: CardStatus.new,
+    chip: { color: "info" }
+  },
+  {
+    label: CardStatusLabels.learning,
+    value: CardStatus.learning,
+    chip: { color: "warning" }
+  },
+  {
+    label: CardStatusLabels.review,
+    value: CardStatus.review,
+    chip: { color: "neutral" }
+  },
+  {
+    label: CardStatusLabels.relearning,
+    value: CardStatus.relearning,
+    chip: { color: "error" }
+  }
+]
+
 const columnNames: Record<string, string> = {
   select: "Выбор",
   id: "ID",
@@ -162,12 +194,17 @@ const columns: TableColumn<ICard>[] = [
   {
     accessorKey: "status",
     header: "Статус",
+    filterFn: (row: Row<ICard>, columnId: string, filterValue: string[]) => {
+      if (!filterValue || filterValue.length === 0) return true
+      const value = row.getValue<string>(columnId)
+      return filterValue.includes(value)
+    },
     cell: ({ row }) => {
       const color = {
         new: "info" as const,
         learning: "warning" as const,
         review: "neutral" as const,
-        relearning: "warning" as const
+        relearning: "error" as const
       }[row.original.status as CardStatus]
 
       return h(
@@ -261,6 +298,20 @@ const meta: TableMeta<ICard> = {
         </UButton>
       </CardsDeleteModal>
       <!-- /Multi delete modal -->
+
+      <!-- Status -->
+      <USelectMenu
+        v-model="selectedStatuses"
+        :items="statusOptions"
+        value-key="value"
+        multiple
+        :search-input="false"
+        size="lg"
+        icon="i-lucide-flag"
+        placeholder="Выбрать статус"
+        class="w-44"
+      />
+      <!-- /Status -->
 
       <!-- Column visibility -->
       <UDropdownMenu
