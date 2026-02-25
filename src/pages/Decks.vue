@@ -5,7 +5,7 @@ import { useDeckStore } from "@/store/deck.store.ts"
 import { type IDeck } from "@/types"
 import type { TabsItem } from "@nuxt/ui"
 import { breakpointsTailwind, useBreakpoints, useElementBounding } from "@vueuse/core"
-import { computed, onMounted, ref, useTemplateRef, watch } from "vue"
+import { computed, ref, useTemplateRef, watch } from "vue"
 
 const props = defineProps<{
   deckId?: string
@@ -40,9 +40,13 @@ const isArchiveOpen = ref<boolean>(false)
 const isToolbarOpen = ref<boolean>(false)
 const hasArchive = ref<boolean>(false)
 const search = ref<string>("")
-const selectedDeck = ref<IDeck | null>(null)
 const selectedTab = ref<TTabItem>(TabItem.all)
 const selectedTags = ref<string[]>([])
+
+const selectedDeck = computed<IDeck | null>(() => {
+  if (!store.decks) return null
+  return store.getDeckById(props.deckId)
+})
 
 const filteredDecks = computed<IDeck[]>(() => {
   let decks = store.activeDecks
@@ -136,8 +140,7 @@ const sortDecksByUpdatedAt = (decks: IDeck[]) => {
 }
 
 const closeDeck = () => {
-  selectedDeck.value = null
-  router.replace({ name: ROUTES.DECKS.name })
+  router.push({ name: ROUTES.DECKS.name })
 }
 
 const clearFilters = () => {
@@ -150,17 +153,14 @@ watch(isArchiveOpen, () => {
   clearFilters()
 })
 
-onMounted(() => {
-  const deck = store.getDeckById(props.deckId)
-
-  if (deck) {
-    selectedDeck.value = deck
-  }
-
-  if (deck?.isArchived) {
-    isArchiveOpen.value = true
-  }
-})
+watch(
+  selectedDeck,
+  deck => {
+    if (!deck) return
+    isArchiveOpen.value = deck.isArchived
+  },
+  { immediate: true }
+)
 </script>
 
 <template>
@@ -168,7 +168,11 @@ onMounted(() => {
     <UDashboardNavbar title="Колоды" class="z-10">
       <!-- Count -->
       <template #trailing>
-        <UBadge :label="isArchiveOpen ? archivedDecks.length : filteredDecks.length" variant="subtle" color="neutral" />
+        <UBadge
+          :label="!store.isLoading && isArchiveOpen ? archivedDecks.length : filteredDecks.length"
+          variant="subtle"
+          color="neutral"
+        />
       </template>
       <!-- /Count -->
 
@@ -255,20 +259,19 @@ onMounted(() => {
       <!-- /Decks -->
 
       <!-- Create -->
-      <UButton
-        size="lg"
-        variant="outline"
-        color="neutral"
-        class="group absolute right-4 bottom-4 h-10 w-10 items-center gap-1.5 overflow-hidden rounded-full px-[9px] transition-all duration-300 hover:w-[158px] hover:pr-3 hover:pl-3"
-      >
-        <UIcon name="i-lucide-plus" class="shrink-0 text-[22px]" />
-
-        <span
-          class="-translate-x-2 translate-y-px whitespace-nowrap opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100"
+      <DeckCreateModal>
+        <UButton
+          size="lg"
+          variant="outline"
+          color="neutral"
+          class="group absolute right-4 bottom-4 z-20 size-10 items-center gap-1.5 overflow-hidden rounded-full px-[9px] transition-all duration-300 hover:w-[158px] hover:pr-3 hover:pl-3"
         >
-          Создать колоду
-        </span>
-      </UButton>
+          <UIcon name="i-lucide-plus" class="-mb-px shrink-0 text-[22px]" />
+          <span class="translate-y-px whitespace-nowrap opacity-0 transition-all duration-300 group-hover:opacity-100">
+            Создать колоду
+          </span>
+        </UButton>
+      </DeckCreateModal>
       <!-- /Create -->
     </div>
     <!-- /Panel Content -->

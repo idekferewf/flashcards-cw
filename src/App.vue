@@ -94,7 +94,7 @@ const items: NavigationMenuItem[][] = [
             :collapsed="collapsed"
             label="Искать..."
             variant="subtle"
-            class="text-muted mt-2.5 rounded-xl py-2.5"
+            :class="['text-muted mt-2.5 rounded-xl', collapsed ? '' : 'py-2']"
           />
           <UNavigationMenu :collapsed="collapsed" :items="items[0]" orientation="vertical" tooltip popover />
           <UNavigationMenu :collapsed="collapsed" :items="items[1]" orientation="vertical" tooltip class="mt-auto" />

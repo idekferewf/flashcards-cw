@@ -1,5 +1,7 @@
 import { CardsTD } from "@/store/temp-data.ts"
 import { CardStatus, type ICard } from "@/types"
+import { type StorageLikeAsync, useStorageAsync } from "@vueuse/core"
+import localforage from "localforage"
 import { defineStore } from "pinia"
 import { ref } from "vue"
 
@@ -12,7 +14,10 @@ export const useCardStore = defineStore("cards", () => {
     card.isPinned = Math.random() > 0.5
   })
 
-  const cards = ref<ICard[]>(CardsTD)
+  const isLoading = ref<boolean>(true)
+  const cards = useStorageAsync<ICard[]>("cards", [...CardsTD], localforage as StorageLikeAsync, {
+    onReady: () => (isLoading.value = false)
+  })
 
   function addCard(newCard: ICard) {
     cards.value.push(newCard)
@@ -38,6 +43,7 @@ export const useCardStore = defineStore("cards", () => {
   }
 
   return {
+    isLoading,
     cards,
     addCard,
     removeCard,

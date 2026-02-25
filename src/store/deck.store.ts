@@ -1,10 +1,15 @@
+import { DecksTD } from "@/store/temp-data.ts"
 import type { IDeck } from "@/types"
+import { type StorageLikeAsync, useStorageAsync } from "@vueuse/core"
+import localforage from "localforage"
 import { defineStore } from "pinia"
 import { computed, ref } from "vue"
-import { DecksTD } from "./temp-data.ts"
 
 export const useDeckStore = defineStore("decks", () => {
-  const decks = ref<IDeck[]>(DecksTD)
+  const isLoading = ref<boolean>(true)
+  const decks = useStorageAsync<IDeck[]>("decks", [...DecksTD], localforage as StorageLikeAsync, {
+    onReady: () => (isLoading.value = false)
+  })
 
   const activeDecks = computed<IDeck[]>(() => decks.value.filter(d => !d.isArchived))
   const archivedDecks = computed<IDeck[]>(() => decks.value.filter(d => d.isArchived))
@@ -29,6 +34,7 @@ export const useDeckStore = defineStore("decks", () => {
   }
 
   return {
+    isLoading,
     decks,
     activeDecks,
     archivedDecks,
