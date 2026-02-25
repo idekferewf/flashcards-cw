@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useCardStore } from "@/store/card.store"
 import { CardStatus, CardStatusLabels, type ICard, type IDeck } from "@/types"
-import type { TableColumn } from "@nuxt/ui"
+import type { SelectMenuItem, TableColumn } from "@nuxt/ui"
 import { useToast } from "@nuxt/ui/composables"
 import {
   getPaginationRowModel,
@@ -122,7 +122,7 @@ const getRowItems = (row: Row<ICard>) => {
   ]
 }
 
-const statusOptions = [
+const statusOptions: SelectMenuItem[] = [
   {
     label: CardStatusLabels.new,
     value: CardStatus.new,
@@ -308,8 +308,8 @@ const meta: TableMeta<ICard> = {
         :search-input="false"
         size="lg"
         icon="i-lucide-flag"
-        placeholder="Выбрать статус"
-        class="w-44"
+        placeholder="Статус"
+        class="w-40"
       />
       <!-- /Status -->
 

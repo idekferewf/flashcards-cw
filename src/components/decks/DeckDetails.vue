@@ -64,7 +64,8 @@ const toolbarLinks = computed<NavigationMenuItem[]>(() => [
   {
     label: "Статистика",
     icon: "i-lucide-chart-no-axes-combined",
-    to: ROUTES.DECKS.children.statistics.fullPath(props.deck?.id ?? "")
+    to: ROUTES.DECKS.children.statistics.fullPath(props.deck?.id ?? ""),
+    disabled: true
   },
   {
     label: "Настройки",

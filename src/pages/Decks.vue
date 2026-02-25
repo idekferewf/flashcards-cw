@@ -3,7 +3,7 @@ import { ROUTES } from "@/constants"
 import router from "@/router"
 import { useDeckStore } from "@/store/deck.store.ts"
 import { type IDeck } from "@/types"
-import type { TabsItem } from "@nuxt/ui/components/Tabs.vue"
+import type { TabsItem } from "@nuxt/ui"
 import { breakpointsTailwind, useBreakpoints, useElementBounding } from "@vueuse/core"
 import { computed, onMounted, ref, useTemplateRef, watch } from "vue"
 
@@ -253,6 +253,23 @@ onMounted(() => {
         :style="{ marginTop: isToolbarOpen ? `${toolbarHeight}px` : '0' }"
       />
       <!-- /Decks -->
+
+      <!-- Create -->
+      <UButton
+        size="lg"
+        variant="outline"
+        color="neutral"
+        class="group absolute right-4 bottom-4 h-10 w-10 items-center gap-1.5 overflow-hidden rounded-full px-[9px] transition-all duration-300 hover:w-[158px] hover:pr-3 hover:pl-3"
+      >
+        <UIcon name="i-lucide-plus" class="shrink-0 text-[22px]" />
+
+        <span
+          class="-translate-x-2 translate-y-px whitespace-nowrap opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100"
+        >
+          Создать колоду
+        </span>
+      </UButton>
+      <!-- /Create -->
     </div>
     <!-- /Panel Content -->
   </UDashboardPanel>

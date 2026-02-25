@@ -39,7 +39,8 @@ const items: NavigationMenuItem[][] = [
     {
       label: "Статистика",
       icon: "i-lucide-area-chart",
-      ui: menuItemUI
+      ui: menuItemUI,
+      disabled: true
     },
     {
       label: "Настройки",
