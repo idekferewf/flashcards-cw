@@ -1,14 +1,28 @@
 <script setup lang="ts">
+import { useTagStore } from "@/store/tag.store.ts"
+import type { ITag, TTagColor, TTagCreate } from "@/types"
+import { normalizeLabel } from "@/utils"
 import type { RadioGroupItem } from "@nuxt/ui"
+import { useToast } from "@nuxt/ui/composables"
 import { useRegle } from "@regle/core"
 import { minLength, required, withMessage } from "@regle/rules"
 import { computed, nextTick, ref, useTemplateRef, watch } from "vue"
 
-defineProps<{
+const props = defineProps<{
   description?: string
+  existDescription?: string
+}>()
+
+const emit = defineEmits<{
+  submit: [ITag]
 }>()
 
 const open = defineModel<boolean>({ default: false })
+
+const toast = useToast()
+const tagStore = useTagStore()
+
+const labelRef = useTemplateRef("label")
 
 const { r$ } = useRegle(
   { label: "", color: "neutral" },
@@ -16,11 +30,10 @@ const { r$ } = useRegle(
     label: {
       required: withMessage(required, "Данное поле обязательно для заполнения."),
       minLength: withMessage(minLength(2), "Минимальная длина названия – 2 символа.")
-    }
+    },
+    color: { required }
   }
 )
-
-const labelRef = useTemplateRef("label")
 
 const indicatorClasses = computed<string>(() => {
   if (r$.$value.color === "neutral") {
@@ -39,7 +52,30 @@ const radioItemsClasses = computed<string>(() => {
 const onSubmit = async () => {
   const { valid, data } = await r$.$validate()
   if (!valid) return
-  console.log(data)
+
+  const existingTag = tagStore.getTag(data.label, data.color)
+  if (existingTag) {
+    toast.add({
+      title: "Данный тег уже существует",
+      description: props.existDescription ?? "Измените название или цвет, чтобы исправить это.",
+      icon: "i-lucide-triangle-alert",
+      color: "warning"
+    })
+    return
+  }
+
+  const tagCreateDTO: TTagCreate = {
+    label: normalizeLabel(data.label),
+    color: data.color as TTagColor
+  }
+  const newTag = tagStore.addTag(tagCreateDTO)
+
+  emit("submit", newTag)
+  close()
+}
+
+const close = () => {
+  open.value = false
 }
 
 const radioItems = ref<RadioGroupItem[]>([
@@ -66,10 +102,6 @@ const radioItems = ref<RadioGroupItem[]>([
 ])
 
 watch(open, () => {
-  if (!open.value) {
-    r$.$reset({ toInitialState: true })
-    return
-  }
   nextTick(() => {
     labelRef.value?.inputRef?.focus()
   })
@@ -127,12 +159,13 @@ watch(open, () => {
           />
         </UFormField>
         <!-- /Color -->
+
         <UButton type="submit" class="invisible hidden" />
       </UForm>
     </template>
 
     <template #footer>
-      <UButton label="Отмена" color="neutral" variant="outline" @click="open = false" />
+      <UButton label="Отмена" color="neutral" variant="outline" @click="close" />
       <UButton label="Сохранить" color="neutral" variant="solid" :disabled="!r$.$correct" @click="onSubmit" />
     </template>
   </UModal>
