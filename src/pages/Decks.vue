@@ -2,6 +2,7 @@
 import { ROUTES } from "@/constants"
 import router from "@/router"
 import { useDeckStore } from "@/store/deck.store.ts"
+import { useTagStore } from "@/store/tag.store.ts"
 import { type IDeck } from "@/types"
 import type { TabsItem } from "@nuxt/ui"
 import { breakpointsTailwind, useBreakpoints, useElementBounding } from "@vueuse/core"
@@ -30,6 +31,7 @@ const tabItems: TabsItem[] = [
 ]
 
 const store = useDeckStore()
+const tagStore = useTagStore()
 
 const toolbarRef = useTemplateRef("toolbar")
 const { height: toolbarHeight } = useElementBounding(toolbarRef)
@@ -47,6 +49,8 @@ const selectedDeck = computed<IDeck | null>(() => {
   if (!store.decks) return null
   return store.getDeckById(props.deckId)
 })
+
+const selectedTagSet = computed(() => new Set(selectedTags.value))
 
 const filteredDecks = computed<IDeck[]>(() => {
   let decks = store.activeDecks
@@ -76,8 +80,6 @@ const archivedDecks = computed<IDeck[]>(() => {
 })
 
 const tagOptions = computed(() => {
-  const map = new Map()
-
   let decks = store.archivedDecks
   if (!isArchiveOpen.value) {
     decks = store.activeDecks
@@ -86,19 +88,10 @@ const tagOptions = computed(() => {
     }
   }
 
-  decks.forEach(deck => {
-    deck.tags.forEach(tag => {
-      if (!map.has(tag.label)) {
-        map.set(tag.label, {
-          label: tag.label,
-          value: tag.label,
-          chip: { color: tag.color }
-        })
-      }
-    })
-  })
-
-  return Array.from(map.values())
+  return tagStore.getTagsByDecks(decks).map(t => ({
+    ...t,
+    chip: { color: t.color }
+  }))
 })
 
 const isDeckPanelOpen = computed({
@@ -117,9 +110,18 @@ const filterFavorite = (decks: IDeck[]) => {
 }
 
 const filterByTags = (decks: IDeck[]) => {
-  if (selectedTags.value.length === 0) return decks
+  if (!selectedTagSet.value.size) return decks
 
-  return decks.filter(deck => selectedTags.value.every(selected => deck.tags.some(tag => tag.label === selected)))
+  return decks.filter(deck => {
+    if (!deck.tagIds?.length) return false
+
+    const deckTagIds = deck.tagIds
+    for (const tagId of selectedTagSet.value) {
+      if (!deckTagIds.includes(tagId)) return false
+    }
+
+    return true
+  })
 }
 
 const filterBySearch = (decks: IDeck[]) => {
@@ -203,10 +205,11 @@ watch(
           <USelectMenu
             v-model="selectedTags"
             :items="tagOptions"
-            value-key="value"
+            value-key="id"
             multiple
             :search-input="{ placeholder: 'Искать...', icon: 'i-lucide-search' }"
             icon="i-lucide-tag"
+            :disabled="!tagOptions.length"
             placeholder="Фильтровать по тегам..."
             class="w-full"
           >
@@ -264,7 +267,7 @@ watch(
           size="lg"
           variant="outline"
           color="neutral"
-          class="group absolute right-4 bottom-4 z-20 size-10 items-center gap-1.5 overflow-hidden rounded-full px-[9px] transition-all duration-300 hover:w-[158px] hover:pr-3 hover:pl-3"
+          class="group absolute right-4 bottom-4 z-20 size-10 items-center gap-1 overflow-hidden rounded-full px-[9px] transition-all duration-300 hover:w-[158px] hover:pr-3 hover:pl-3"
         >
           <UIcon name="i-lucide-plus" class="-mb-px shrink-0 text-[22px]" />
           <span class="translate-y-px whitespace-nowrap opacity-0 transition-all duration-300 group-hover:opacity-100">

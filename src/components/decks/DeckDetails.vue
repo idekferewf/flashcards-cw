@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ROUTES } from "@/constants"
 import { useDeckStore } from "@/store/deck.store"
-import type { IDeck } from "@/types"
+import { useTagStore } from "@/store/tag.store.ts"
+import type { IDeck, ITag } from "@/types"
 import type { DropdownMenuItem, NavigationMenuItem } from "@nuxt/ui"
 import { computed, ref } from "vue"
 
@@ -9,12 +10,15 @@ const props = defineProps<{
   deck: IDeck
 }>()
 
-const emits = defineEmits(["close"])
+const emit = defineEmits(["close"])
 
 const toast = useToast()
 const deckStore = useDeckStore()
+const tagStore = useTagStore()
 
 const deckToDelete = ref<IDeck | null>(null)
+
+const tags = computed<ITag[]>(() => tagStore.getTagsByDeck(props.deck))
 
 const toggleFavorite = () => {
   const wasFavorite = props.deck.isFavorite
@@ -75,7 +79,7 @@ const toolbarLinks = computed<NavigationMenuItem[]>(() => [
 ])
 
 defineShortcuts({
-  ctrl_escape: () => emits("close"),
+  ctrl_escape: () => emit("close"),
   delete: () => openDeleteModal()
 })
 </script>
@@ -87,13 +91,13 @@ defineShortcuts({
         <!-- Name -->
         <template #leading>
           <UTooltip text="Закрыть колоду" :kbds="['ctrl', 'escape']">
-            <UButton icon="i-lucide-x" color="neutral" variant="ghost" class="-ms-1.5" @click="emits('close')" />
+            <UButton icon="i-lucide-x" color="neutral" variant="ghost" class="-ms-1.5" @click="emit('close')" />
           </UTooltip>
         </template>
         <template #title>
           <h1>{{ deck.name }}</h1>
-          <TagList v-if="deck.tags.length" :tags="deck.tags.slice(0, 4)" class="ml-1.5 gap-1.5 truncate text-[11px]" />
-          <span v-if="deck.tags.length > 4" class="text-toned ml-0.5">...</span>
+          <TagList v-if="tags.length" :tags="tags.slice(0, 4)" class="ml-1.5 gap-1.5 truncate text-[11px]" />
+          <span v-if="tags.length > 4" class="text-toned ml-0.5">...</span>
         </template>
         <!-- /Name -->
 
@@ -104,6 +108,7 @@ defineShortcuts({
             <UKbd>ctrl + e</UKbd>
           </UButton>
 
+          <!-- Archive -->
           <UTooltip text="Архивировать">
             <UButton
               square
@@ -113,7 +118,9 @@ defineShortcuts({
               @click="toggleArchived"
             />
           </UTooltip>
+          <!-- /Archive -->
 
+          <!-- Favorite -->
           <UTooltip text="Добавить в избранное">
             <UButton
               icon="i-lucide-star"
@@ -122,6 +129,7 @@ defineShortcuts({
               @click="toggleFavorite"
             />
           </UTooltip>
+          <!-- /Favorite -->
 
           <UDropdownMenu :modal="false" arrow :content="{ align: 'end', sideOffset: 4 }" :items="dropdownItems">
             <UButton icon="i-lucide-ellipsis" color="neutral" variant="ghost" />

@@ -1,12 +1,18 @@
 <script setup lang="ts">
-import type { IDeck } from "@/types"
+import { useTagStore } from "@/store/tag.store.ts"
+import type { IDeck, ITag } from "@/types"
 import { format, isToday } from "date-fns"
 import { ru } from "date-fns/locale"
+import { computed } from "vue"
 
-defineProps<{
+const props = defineProps<{
   deck: IDeck
   isSelected: boolean
 }>()
+
+const tagStore = useTagStore()
+
+const tags = computed<ITag[]>(() => tagStore.getTagsByDeck(props.deck))
 </script>
 
 <template>
@@ -48,7 +54,7 @@ defineProps<{
     <!-- /Description -->
 
     <!-- Tags -->
-    <TagList v-if="deck.tags.length" :tags="deck.tags" class="mt-2" />
+    <TagList v-if="tags.length" :tags="tags" class="mt-2" />
     <!-- /Tags -->
   </div>
 </template>

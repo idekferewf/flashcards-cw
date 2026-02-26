@@ -16,3 +16,7 @@ export function pluralize(count: number, one: string, few: string, many: string)
 
   return many
 }
+
+export function normalizeLabel(label: string): string {
+  return label.trim().toLowerCase()
+}

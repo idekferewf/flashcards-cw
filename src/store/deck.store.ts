@@ -41,7 +41,6 @@ export const useDeckStore = defineStore("decks", () => {
     addDeck,
     removeDeck,
     getDeckById,
-    toggleDeckFlag,
-    saveToIndexedDb: true
+    toggleDeckFlag
   }
 })

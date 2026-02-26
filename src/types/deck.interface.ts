@@ -1,5 +1,3 @@
-import type { ITag } from "@/types"
-
 export interface IDeck {
   id: string
   name: string
@@ -9,5 +7,5 @@ export interface IDeck {
 
   isArchived: boolean
   isFavorite: boolean
-  tags: ITag[]
+  tagIds: string[]
 }

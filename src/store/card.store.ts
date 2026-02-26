@@ -49,7 +49,6 @@ export const useCardStore = defineStore("cards", () => {
     removeCard,
     removeCards,
     togglePin,
-    getCardsByDeckId,
-    saveToIndexedDb: true
+    getCardsByDeckId
   }
 })
