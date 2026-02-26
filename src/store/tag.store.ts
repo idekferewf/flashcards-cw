@@ -1,5 +1,5 @@
 import { TagsTD } from "@/store/temp-data.ts"
-import type { IDeck, ITag, ITagView, TTagColor, TTagCreate } from "@/types"
+import type { IDeck, ITag, ITagView, TTagColor, TTagCreateDTO } from "@/types"
 import { normalizeLabel } from "@/utils"
 import { type StorageLikeAsync, useStorageAsync } from "@vueuse/core"
 import localforage from "localforage"
@@ -24,7 +24,7 @@ export const useTagStore = defineStore("tags", () => {
     }))
   })
 
-  function addTag(data: TTagCreate): ITag {
+  function addTag(data: TTagCreateDTO): ITag {
     const newTag: ITag = { id: crypto.randomUUID(), ...data }
     tags.value = [...tags.value, newTag]
     return newTag

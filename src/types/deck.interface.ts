@@ -9,3 +9,5 @@ export interface IDeck {
   isFavorite: boolean
   tagIds: string[]
 }
+
+export type TDeckCreateDTO = Omit<IDeck, "id" | "createdAt" | "updatedAt">

@@ -6,7 +6,7 @@ export interface ITag {
   color: TTagColor
 }
 
-export type TTagCreate = Omit<ITag, "id">
+export type TTagCreateDTO = Omit<ITag, "id">
 
 export interface ITagView extends ITag {
   chip: { color: TTagColor }

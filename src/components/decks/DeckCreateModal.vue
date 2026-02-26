@@ -1,14 +1,22 @@
 <script setup lang="ts">
+import { useDeckStore } from "@/store/deck.store.ts"
 import { useTagStore } from "@/store/tag.store.ts"
-import type { ITag } from "@/types"
-import type { FormSubmitEvent } from "@nuxt/ui"
-import { type InferInput, useRegle } from "@regle/core"
-import { boolean, minLength, required, withMessage } from "@regle/rules"
+import type { IDeck, ITag, TDeckCreateDTO } from "@/types"
+import { useRegle } from "@regle/core"
+import { boolean, maxLength, minLength, required, withMessage } from "@regle/rules"
+import { nextTick, useTemplateRef, watch } from "vue"
 
-const open = defineModel<boolean>({ default: false })
+const open = defineModel<boolean>("open", { default: false })
+
+const emit = defineEmits<{
+  submit: [IDeck]
+}>()
 
 const toast = useToast()
+const deckStore = useDeckStore()
 const tagStore = useTagStore()
+
+const nameRef = useTemplateRef("name")
 
 const { r$ } = useRegle(
   {
@@ -21,7 +29,8 @@ const { r$ } = useRegle(
   {
     name: {
       required: withMessage(required, "Данное поле обязательно для заполнения."),
-      minLength: withMessage(minLength(4), "Минимальная длина названия – 4 символа.")
+      minLength: withMessage(minLength(4), "Минимальная длина названия – 4 символа."),
+      maxLength: withMessage(maxLength(100), "Минимальная длина названия – 100 символов.")
     },
     description: {
       minLength: withMessage(minLength(4), "Минимальная длина описания – 6 символов.")
@@ -31,10 +40,22 @@ const { r$ } = useRegle(
   }
 )
 
-type Schema = InferInput<typeof r$>
+const onSubmit = async () => {
+  const { valid, data } = await r$.$validate()
+  if (!valid) return
 
-async function onSubmit(event: FormSubmitEvent<Schema>) {
-  console.log(event.data)
+  const deckCreateDTO: TDeckCreateDTO = {
+    name: data.name,
+    description: data.description,
+    isFavorite: data.favorite ?? false,
+    isArchived: data.archive ?? false,
+    tagIds: (data.tags as ITag[]).map(t => t.id)
+  }
+  const newDeck = deckStore.addDeck(deckCreateDTO)
+
+  emit("submit", newDeck)
+  close()
+  r$.$reset({ toInitialState: true })
 }
 
 const onSubmitTagCreate = (tag: ITag) => {
@@ -46,6 +67,18 @@ const onSubmitTagCreate = (tag: ITag) => {
     color: "success"
   })
 }
+
+const close = () => {
+  open.value = false
+}
+
+watch(open, value => {
+  if (value) {
+    nextTick(() => {
+      nameRef.value?.inputRef?.focus()
+    })
+  }
+})
 </script>
 
 <template>
@@ -76,7 +109,7 @@ const onSubmitTagCreate = (tag: ITag) => {
               Название
             </div>
           </template>
-          <UInput v-model="r$.$value.name" placeholder="Введите название" class="w-full" />
+          <UInput ref="name" v-model="r$.$value.name" placeholder="Введите название" class="w-full" />
         </UFormField>
         <!-- /Name -->
 
@@ -149,7 +182,7 @@ const onSubmitTagCreate = (tag: ITag) => {
 
         <USeparator />
 
-        <UFormField label="Дополнительно" />
+        <p class="text-default block text-sm font-medium">Дополнительно</p>
 
         <!-- Favorite -->
         <USwitch
@@ -172,12 +205,14 @@ const onSubmitTagCreate = (tag: ITag) => {
           class="mt-5"
         />
         <!-- /Archive -->
+
+        <UButton type="submit" class="invisible hidden" />
       </UForm>
     </template>
 
     <template #footer>
-      <UButton size="lg" label="Отмена" variant="outline" color="neutral" @click="open = false" />
-      <UButton size="lg" label="Сохранить" color="neutral" />
+      <UButton size="lg" label="Отмена" variant="outline" color="neutral" @click="close" />
+      <UButton size="lg" label="Сохранить" color="neutral" @click="onSubmit" />
     </template>
   </USlideover>
 </template>

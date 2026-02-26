@@ -30,6 +30,7 @@ const tabItems: TabsItem[] = [
   }
 ]
 
+const toast = useToast()
 const store = useDeckStore()
 const tagStore = useTagStore()
 
@@ -151,6 +152,20 @@ const clearFilters = () => {
   selectedTags.value = []
 }
 
+const onCreateDeck = (deck: IDeck) => {
+  router.push({
+    name: ROUTES.DECKS.children.index.name,
+    params: { deckId: deck.id }
+  })
+
+  toast.add({
+    title: "Колода успешно создана",
+    description: "Добавьте карточки, чтобы начать обучение.",
+    icon: "i-lucide-circle-check",
+    color: "success"
+  })
+}
+
 watch(isArchiveOpen, () => {
   clearFilters()
 })
@@ -262,7 +277,7 @@ watch(
       <!-- /Decks -->
 
       <!-- Create -->
-      <DeckCreateModal>
+      <DeckCreateModal @submit="onCreateDeck">
         <UButton
           size="lg"
           variant="outline"

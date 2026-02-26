@@ -2,6 +2,7 @@
 import DeckList from "@/components/decks/DeckList.vue"
 import { ROUTES } from "@/constants"
 import type { IDeck } from "@/types"
+import { isOverlayOpen } from "@/utils"
 import { useElementBounding, useResizeObserver } from "@vueuse/core"
 import { computed, ref, useTemplateRef, watch } from "vue"
 import { useRouter } from "vue-router"
@@ -34,8 +35,10 @@ const archivedDeckNames = computed<string>(() => {
 })
 
 const selectDeck = (deck: IDeck) => {
-  selectedDeck.value = deck
-  router.replace({ name: ROUTES.DECKS.children.index.name, params: { deckId: deck.id } })
+  router.replace({
+    name: ROUTES.DECKS.children.index.name,
+    params: { deckId: deck.id }
+  })
 }
 
 const clearResetPullTimeout = () => {
@@ -125,13 +128,7 @@ const moveSelection = (direction: 1 | -1) => {
   if (nextIndex < 0 || nextIndex >= decks.length) return
 
   const deck = decks[nextIndex] as IDeck
-
-  router.replace({
-    name: ROUTES.DECKS.children.index.name,
-    params: { deckId: deck.id }
-  })
-
-  selectedDeck.value = deck
+  selectDeck(deck)
 }
 
 watch(
@@ -144,8 +141,14 @@ watch(
 )
 
 defineShortcuts({
-  arrowdown: () => moveSelection(1),
-  arrowup: () => moveSelection(-1)
+  arrowdown: () => {
+    if (isOverlayOpen()) return
+    moveSelection(1)
+  },
+  arrowup: () => {
+    if (isOverlayOpen()) return
+    moveSelection(-1)
+  }
 })
 
 useResizeObserver(scrollRef, () => {

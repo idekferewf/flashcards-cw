@@ -20,3 +20,7 @@ export function pluralize(count: number, one: string, few: string, many: string)
 export function normalizeLabel(label: string): string {
   return label.trim().toLowerCase()
 }
+
+export function isOverlayOpen() {
+  return !!document.querySelector('[data-slot="overlay"][data-state="open"]')
+}

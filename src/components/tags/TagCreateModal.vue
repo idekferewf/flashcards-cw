@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useTagStore } from "@/store/tag.store.ts"
-import type { ITag, TTagColor, TTagCreate } from "@/types"
+import type { ITag, TTagColor, TTagCreateDTO } from "@/types"
 import { normalizeLabel } from "@/utils"
 import type { RadioGroupItem } from "@nuxt/ui"
 import { useToast } from "@nuxt/ui/composables"
@@ -65,7 +65,7 @@ const onSubmit = async () => {
     return
   }
 
-  const tagCreateDTO: TTagCreate = {
+  const tagCreateDTO: TTagCreateDTO = {
     label: normalizeLabel(data.label),
     color: data.color as TTagColor
   }
@@ -102,10 +102,12 @@ const radioItems = ref<RadioGroupItem[]>([
   }
 ])
 
-watch(open, () => {
-  nextTick(() => {
-    labelRef.value?.inputRef?.focus()
-  })
+watch(open, value => {
+  if (open.value) {
+    nextTick(() => {
+      labelRef.value?.inputRef?.focus()
+    })
+  }
 })
 </script>
 
@@ -142,6 +144,7 @@ watch(open, () => {
               <span>Цвет</span>
             </div>
           </template>
+
           <URadioGroup
             v-model="r$.$value.color"
             indicator="end"
@@ -149,7 +152,7 @@ watch(open, () => {
             orientation="horizontal"
             variant="card"
             :items="radioItems"
-            :ui="{ fieldset: 'flex-wrap', indicator: indicatorClasses, item: radioItemsClasses }"
+            :ui="{ fieldset: 'flex-wrap gap-2', indicator: indicatorClasses, item: radioItemsClasses }"
             class="mb-0"
           />
         </UFormField>
