@@ -29,7 +29,8 @@ const { r$ } = useRegle(
   {
     label: {
       required: withMessage(required, "Данное поле обязательно для заполнения."),
-      minLength: withMessage(minLength(2), "Минимальная длина названия – 2 символа.")
+      minLength: withMessage(minLength(2), "Минимальная длина названия – 2 символа."),
+      noSpaces: withMessage(value => !/\s/.test(value as string), "Название не должно содержать пробелов.")
     },
     color: { required }
   }
@@ -122,13 +123,7 @@ watch(open, () => {
     <template #body>
       <UForm :schema="r$" :state="r$.$value" @submit="onSubmit">
         <!-- Label -->
-        <UFormField
-          name="label"
-          hint="*"
-          help="Придумайте краткое и понятное название."
-          :ui="{ hint: 'text-error' }"
-          class="mb-4"
-        >
+        <UFormField name="label" help="Придумайте краткое и понятное название." :ui="{ hint: 'text-error' }" class="mb-4">
           <template #label>
             <div class="inline-flex items-center gap-x-1.5">
               <UIcon name="i-lucide-letter-text" class="size-4" />
@@ -140,7 +135,7 @@ watch(open, () => {
         <!-- /Label -->
 
         <!-- Color -->
-        <UFormField name="color" hint="*" help="Выберите подходящий цвет из списка.">
+        <UFormField name="color" help="Выберите подходящий цвет из списка.">
           <template #label>
             <div class="inline-flex items-center gap-x-1.5">
               <UIcon name="i-lucide-paintbrush" class="size-4" />

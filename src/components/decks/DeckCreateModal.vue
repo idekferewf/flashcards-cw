@@ -5,6 +5,8 @@ import type { FormSubmitEvent } from "@nuxt/ui"
 import { type InferInput, useRegle } from "@regle/core"
 import { boolean, minLength, required, withMessage } from "@regle/rules"
 
+const open = defineModel<boolean>({ default: false })
+
 const toast = useToast()
 const tagStore = useTagStore()
 
@@ -48,6 +50,7 @@ const onSubmitTagCreate = (tag: ITag) => {
 
 <template>
   <USlideover
+    v-model:open="open"
     title="Создание колоды"
     description="Заполните необходимые поля ниже, чтобы создать колоду."
     :ui="{ footer: 'justify-end' }"
@@ -78,7 +81,7 @@ const onSubmitTagCreate = (tag: ITag) => {
         <!-- /Name -->
 
         <!-- Description -->
-        <UFormField name="description" hint="*" help="Кратко опишите, что именно содержится в колоде.">
+        <UFormField name="description" help="Кратко опишите, что именно содержится в колоде.">
           <template #label>
             <div class="inline-flex items-center gap-1.5">
               <UIcon name="i-lucide-letter-text" class="size-4" />
@@ -90,7 +93,7 @@ const onSubmitTagCreate = (tag: ITag) => {
         <!-- /Description -->
 
         <!-- Tags -->
-        <UFormField hint="*">
+        <UFormField>
           <template #label>
             <div class="inline-flex items-center gap-1.5">
               <UIcon name="i-lucide-tags" class="size-4" />
@@ -100,7 +103,7 @@ const onSubmitTagCreate = (tag: ITag) => {
           <div class="flex flex-wrap items-center gap-2">
             <!-- Tags -->
             <span v-if="!r$.$value.tags.length" class="text-muted text-sm">Теги не добавлены</span>
-            <div v-else class="flex flex-wrap items-center gap-2 text-xs">
+            <div v-else class="flex flex-wrap items-center gap-1.5 text-xs">
               <Tag v-for="tag in r$.$value.tags as ITag[]" :key="tag.id" :tag="tag" class="pr-1">
                 <button
                   tabindex="-1"
@@ -146,34 +149,34 @@ const onSubmitTagCreate = (tag: ITag) => {
 
         <USeparator />
 
-        <UFormField label="Дополнительно" hint="*">
-          <!-- Favorite -->
-          <USwitch
-            v-model="r$.$value.favorite"
-            checked-icon="i-lucide-check"
-            size="lg"
-            label="Добавить в избранное?"
-            description="Колода будет добавлена в избранное."
-            class="mt-5"
-          />
-          <!-- /Favorite -->
+        <UFormField label="Дополнительно" />
 
-          <!-- Archive -->
-          <USwitch
-            v-model="r$.$value.archive"
-            checked-icon="i-lucide-check"
-            size="lg"
-            label="Добавить в архив?"
-            description="Будет архивирована после создания."
-            class="mt-5"
-          />
-          <!-- /Archive -->
-        </UFormField>
+        <!-- Favorite -->
+        <USwitch
+          v-model="r$.$value.favorite"
+          checked-icon="i-lucide-check"
+          size="lg"
+          label="Добавить в избранное?"
+          description="Колода будет добавлена в избранное."
+          class="mt-5"
+        />
+        <!-- /Favorite -->
+
+        <!-- Archive -->
+        <USwitch
+          v-model="r$.$value.archive"
+          checked-icon="i-lucide-check"
+          size="lg"
+          label="Добавить в архив?"
+          description="Будет архивирована после создания."
+          class="mt-5"
+        />
+        <!-- /Archive -->
       </UForm>
     </template>
 
     <template #footer>
-      <UButton size="lg" label="Отмена" variant="outline" color="neutral" />
+      <UButton size="lg" label="Отмена" variant="outline" color="neutral" @click="open = false" />
       <UButton size="lg" label="Сохранить" color="neutral" />
     </template>
   </USlideover>
