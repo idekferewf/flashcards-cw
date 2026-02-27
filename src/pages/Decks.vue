@@ -39,6 +39,7 @@ const { height: toolbarHeight } = useElementBounding(toolbarRef)
 const breakpoints = useBreakpoints(breakpointsTailwind)
 const isMobile = breakpoints.smaller("lg")
 
+const isCreateModalOpen = ref<boolean>(false)
 const isArchiveOpen = ref<boolean>(false)
 const isToolbarOpen = ref<boolean>(false)
 const hasArchive = ref<boolean>(false)
@@ -158,6 +159,10 @@ const onCreateDeck = (deck: IDeck) => {
     params: { deckId: deck.id }
   })
 
+  if (deck.isArchived) {
+    isArchiveOpen.value = true
+  }
+
   toast.add({
     title: "Колода успешно создана",
     description: "Добавьте карточки, чтобы начать обучение.",
@@ -212,56 +217,66 @@ watch(
       <!-- Filters -->
       <UDashboardToolbar
         ref="toolbar"
-        class="absolute top-0 left-0 z-50 w-full flex-col gap-y-0 py-3 transition-all duration-200"
+        class="absolute top-0 left-0 z-50 w-full flex-col items-start gap-y-0 pt-3 pb-5 transition-all duration-200"
         :class="isToolbarOpen ? 'visible translate-y-0 opacity-100' : 'invisible -translate-y-full opacity-0'"
       >
-        <!-- Filter Tags -->
-        <div class="flex w-full items-center gap-x-2.5">
-          <USelectMenu
-            v-model="selectedTags"
-            :items="tagOptions"
-            value-key="id"
-            multiple
-            :search-input="{ placeholder: 'Искать...', icon: 'i-lucide-search' }"
-            icon="i-lucide-tag"
-            :disabled="!tagOptions.length"
-            placeholder="Фильтровать по тегам..."
-            class="w-full"
-          >
-            <template #empty>Ничего не найдено</template>
-          </USelectMenu>
-          <UButton square variant="subtle" color="neutral" :disabled="selectedTags.length === 0" @click="selectedTags = []">
-            <UIcon name="i-lucide-trash" class="text-muted size-4" />
-          </UButton>
-        </div>
-        <!-- /Filter Tags -->
+        <!-- Header -->
+        <div class="text-default flex w-full items-center gap-x-1.5 self-start text-sm">
+          <UIcon name="i-lucide-filter" />
+          <span class="flex-1 font-medium">Фильтры</span>
 
-        <div class="mt-3 flex w-full items-center" :class="isArchiveOpen ? 'gap-x-2.5' : 'gap-x-4'">
-          <USwitch v-if="!isArchiveOpen" v-model="hasArchive" label="Архив?" checked-icon="i-lucide-check" />
-          <UInput v-model="search" icon="i-lucide-search" placeholder="Поиск..." class="w-full" />
+          <!-- Clear -->
           <UButton
-            v-if="isArchiveOpen"
             label="Очистить фильтры"
             icon="i-lucide-funnel-x"
             size="sm"
             variant="ghost"
             color="neutral"
+            :disabled="!search && !hasArchive && !selectedTags.length"
             @click="clearFilters"
           />
+          <!-- /Clear -->
         </div>
+        <!-- /Header -->
 
-        <!-- Clear Filters -->
-        <UButton
-          v-if="!isArchiveOpen"
-          label="Очистить фильтры"
-          icon="i-lucide-funnel-x"
-          size="sm"
-          variant="ghost"
-          color="neutral"
-          class="mt-2.5 self-end"
-          @click="clearFilters"
-        />
-        <!-- /Clear Filters -->
+        <!-- Search -->
+        <UInput v-model="search" icon="i-lucide-search" placeholder="Поиск..." class="mt-2.5 w-full" />
+        <!-- /Search -->
+
+        <div class="mt-3 flex w-full items-center" :class="isArchiveOpen ? 'gap-x-2.5' : 'gap-x-4'">
+          <!-- Archive -->
+          <USwitch v-if="!isArchiveOpen" v-model="hasArchive" label="Архив?" checked-icon="i-lucide-check" />
+          <!-- Archive -->
+
+          <!-- Tags -->
+          <div class="flex w-full min-w-0 items-center gap-x-2">
+            <USelectMenu
+              v-model="selectedTags"
+              :items="tagOptions"
+              value-key="id"
+              multiple
+              :search-input="{ placeholder: 'Искать...', icon: 'i-lucide-search' }"
+              icon="i-lucide-tag"
+              :disabled="!tagOptions.length"
+              placeholder="Искать по тегам..."
+              class="w-full min-w-0"
+            >
+              <template #empty>Ничего не найдено</template>
+            </USelectMenu>
+
+            <UButton
+              square
+              variant="subtle"
+              color="neutral"
+              :disabled="selectedTags.length === 0"
+              class="flex size-8 min-w-8 items-center justify-center"
+              @click="selectedTags = []"
+            >
+              <UIcon name="i-lucide-trash" class="text-muted size-4" />
+            </UButton>
+          </div>
+          <!-- /Tags -->
+        </div>
       </UDashboardToolbar>
       <!-- /Filters -->
 
@@ -273,11 +288,12 @@ watch(
         :archived-decks="archivedDecks"
         class="transition-[transform,margin] duration-200"
         :style="{ marginTop: isToolbarOpen ? `${toolbarHeight}px` : '0' }"
+        @click-create-deck="isCreateModalOpen = true"
       />
       <!-- /Decks -->
 
       <!-- Create -->
-      <DeckCreateModal @submit="onCreateDeck">
+      <DeckCreateModal v-model:open="isCreateModalOpen" @submit="onCreateDeck">
         <UButton
           size="lg"
           variant="outline"
@@ -306,14 +322,3 @@ watch(
     </template>
   </USlideover>
 </template>
-
-<style scoped>
-::-webkit-scrollbar {
-  width: 2px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--ui-color-neutral-300);
-  border-radius: 4px;
-}
-</style>

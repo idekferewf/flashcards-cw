@@ -51,7 +51,8 @@
 }
 
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 2px;
+  height: 2px;
 }
 
 ::-webkit-scrollbar-track {
@@ -59,18 +60,10 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--ui-color-neutral-200);
-  border-radius: 6px;
+  background: var(--ui-color-neutral-300);
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--ui-color-neutral-100);
-}
-
-.hide-scrollbar::-webkit-scrollbar {
-  width: 0;
-}
-
-.cards-scrollbar::-webkit-scrollbar {
-  height: 3px;
 }

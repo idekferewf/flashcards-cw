@@ -308,8 +308,8 @@ const meta: TableMeta<ICard> = {
         :search-input="false"
         size="lg"
         icon="i-lucide-flag"
-        placeholder="Статус"
-        class="w-40"
+        placeholder="Выберите статус"
+        class="w-48"
       />
       <!-- /Status -->
 
@@ -350,7 +350,7 @@ const meta: TableMeta<ICard> = {
     :data="cards"
     :columns="columns"
     :meta="meta"
-    class="cards-scrollbar shrink-0"
+    class="shrink-0"
     :ui="{
       base: 'table-fixed border-separate border-spacing-0',
       thead: '[&>tr]:bg-elevated/50 [&>tr]:after:content-none',

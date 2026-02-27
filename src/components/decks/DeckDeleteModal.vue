@@ -45,8 +45,8 @@ watch(deck, value => {
     deckCards.value = cardStore.getCardsByDeckId(value.id)
 
     nextTick(() => {
-      const submitButton: HTMLButtonElement | null = document.querySelector(".delete-deck-button")
-      submitButton?.focus()
+      const cancelButton: HTMLButtonElement | null = document.querySelector(".cancel-button")
+      cancelButton?.focus()
     })
   }
 })
@@ -85,20 +85,9 @@ watch(deck, value => {
       <!-- /Cards -->
 
       <div class="flex justify-end gap-2 pt-1">
-        <UButton label="Отмена" color="neutral" variant="subtle" class="px-4" @click="open = false" />
-        <UButton label="Удалить" color="error" variant="solid" class="delete-deck-button px-4" @click="onSubmit" />
+        <UButton label="Отмена" color="neutral" variant="subtle" class="cancel-button px-4" @click="open = false" />
+        <UButton label="Удалить" color="error" variant="solid" class="px-4" @click="onSubmit" />
       </div>
     </template>
   </UModal>
 </template>
-
-<style scoped>
-::-webkit-scrollbar {
-  width: 2px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--ui-color-neutral-300);
-  border-radius: 4px;
-}
-</style>

@@ -1,5 +1,5 @@
 import { DecksTD } from "@/store/temp-data.ts"
-import type { IDeck, TDeckCreateDTO } from "@/types"
+import type { IDeck, TDeckCreateDTO, TDeckUpdateDTO } from "@/types"
 import { type StorageLikeAsync, useStorageAsync } from "@vueuse/core"
 import localforage from "localforage"
 import { defineStore } from "pinia"
@@ -26,6 +26,19 @@ export const useDeckStore = defineStore("decks", () => {
     return newDeck
   }
 
+  function updateDeck(id: string, data: TDeckUpdateDTO): IDeck {
+    const deck = decks.value.find(d => d.id === id)
+    if (!deck) throw new Error(`Deck with id "${id}" not found`)
+
+    const updatedDeck: IDeck = {
+      ...deck,
+      ...data,
+      updatedAt: new Date().toISOString()
+    }
+    decks.value = decks.value.map(d => (d.id === id ? updatedDeck : d))
+    return updatedDeck
+  }
+
   function removeDeck(id: string): void {
     decks.value = decks.value.filter(d => d.id !== id)
   }
@@ -47,6 +60,7 @@ export const useDeckStore = defineStore("decks", () => {
     activeDecks,
     archivedDecks,
     addDeck,
+    updateDeck,
     removeDeck,
     getDeckById,
     toggleDeckFlag

@@ -16,6 +16,7 @@ const toast = useToast()
 const deckStore = useDeckStore()
 const tagStore = useTagStore()
 
+const isEditModalOpen = ref<boolean>(false)
 const deckToDelete = ref<IDeck | null>(null)
 
 const tags = computed<ITag[]>(() => tagStore.getTagsByDeck(props.deck))
@@ -80,6 +81,10 @@ const toolbarLinks = computed<NavigationMenuItem[]>(() => [
 
 defineShortcuts({
   ctrl_escape: () => emit("close"),
+  ctrl_e: {
+    handler: () => (isEditModalOpen.value = !isEditModalOpen.value),
+    usingInput: true
+  },
   delete: () => openDeleteModal()
 })
 </script>
@@ -103,10 +108,12 @@ defineShortcuts({
 
         <!-- Right actions -->
         <template #right>
-          <UButton icon="i-lucide-square-pen" color="neutral" variant="ghost">
-            Редактировать
-            <UKbd>ctrl + e</UKbd>
-          </UButton>
+          <DeckEditModal v-model:open="isEditModalOpen" :deck>
+            <UButton icon="i-lucide-square-pen" color="neutral" variant="ghost">
+              Редактировать
+              <UKbd>ctrl + e</UKbd>
+            </UButton>
+          </DeckEditModal>
 
           <!-- Archive -->
           <UTooltip text="Архивировать">

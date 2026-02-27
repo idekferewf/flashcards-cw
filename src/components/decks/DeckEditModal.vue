@@ -1,16 +1,16 @@
 <script setup lang="ts">
 import { useDeckStore } from "@/store/deck.store.ts"
 import { useTagStore } from "@/store/tag.store.ts"
-import type { IDeck, ITag, TDeckCreateDTO } from "@/types"
+import type { IDeck, ITag, TDeckUpdateDTO } from "@/types"
 import { useRegle } from "@regle/core"
-import { boolean, maxLength, minLength, required, withMessage } from "@regle/rules"
-import { useTemplateRef } from "vue"
+import { boolean, maxLength, minLength, withMessage } from "@regle/rules"
+import { useTemplateRef, watch } from "vue"
+
+const props = defineProps<{
+  deck: IDeck
+}>()
 
 const open = defineModel<boolean>("open", { default: false })
-
-const emit = defineEmits<{
-  submit: [IDeck]
-}>()
 
 const toast = useToast()
 const deckStore = useDeckStore()
@@ -20,15 +20,14 @@ const descriptionRef = useTemplateRef("description")
 
 const { r$ } = useRegle(
   {
-    name: "",
-    description: "",
-    tags: [],
-    archive: false,
-    favorite: false
+    name: props.deck.name,
+    description: props.deck.description ?? "",
+    tags: tagStore.getTagsByDeck(props.deck),
+    archive: props.deck.isArchived ?? false,
+    favorite: props.deck.isFavorite ?? false
   },
   {
     name: {
-      required: withMessage(required, "Данное поле обязательно для заполнения."),
       minLength: withMessage(minLength(4), "Минимальная длина названия – 4 символа."),
       maxLength: withMessage(maxLength(100), "Максимальная длина названия – 100 символов.")
     },
@@ -44,18 +43,16 @@ const onSubmit = async () => {
   const { valid, data } = await r$.$validate()
   if (!valid) return
 
-  const deckCreateDTO: TDeckCreateDTO = {
+  const deckUpdateDTO: TDeckUpdateDTO = {
     name: data.name,
     description: data.description,
     isFavorite: data.favorite ?? false,
     isArchived: data.archive ?? false,
     tagIds: (data.tags as ITag[]).map(t => t.id)
   }
-  const newDeck = deckStore.addDeck(deckCreateDTO)
+  deckStore.updateDeck(props.deck.id, deckUpdateDTO)
 
-  emit("submit", newDeck)
   close()
-  r$.$reset({ toInitialState: true })
 }
 
 const onSubmitTagCreate = (tag: ITag) => {
@@ -71,13 +68,26 @@ const onSubmitTagCreate = (tag: ITag) => {
 const close = () => {
   open.value = false
 }
+
+watch(
+  () => [props.deck, open.value] as const,
+  ([deck, open]) => {
+    if (!open) return
+    r$.$value.name = deck.name
+    r$.$value.description = deck.description ?? ""
+    r$.$value.tags = tagStore.getTagsByDeck(deck)
+    r$.$value.archive = deck.isArchived ?? false
+    r$.$value.favorite = deck.isFavorite ?? false
+    r$.$reset()
+  }
+)
 </script>
 
 <template>
   <USlideover
     v-model:open="open"
-    title="Создание колоды"
-    description="Заполните необходимые поля ниже, чтобы создать колоду."
+    title="Редактирование колоды"
+    description="Измените необходимые поля ниже и сохраните колоду."
     :ui="{ footer: 'justify-end' }"
   >
     <!-- Trigger -->
@@ -176,12 +186,12 @@ const close = () => {
               <template #empty>Ничего не найдено</template>
               <span class="text-dimmed">Выбрать теги</span>
             </USelectMenu>
-            <!-- Select Tag -->
+            <!-- /Select Tag -->
 
             <!-- Create Tag -->
             <TagCreateModal
               description="Тег будет добавлен в колоду после создания."
-              exist-description="Вы можете выбрать его в форме создания колоды."
+              exist-description="Вы можете выбрать его в форме редактирования колоды."
               @submit="onSubmitTagCreate"
             >
               <UButton label="Добавить тег" icon="i-lucide-plus" variant="soft" color="neutral" size="sm" />
@@ -212,7 +222,7 @@ const close = () => {
           checked-icon="i-lucide-check"
           size="lg"
           label="Добавить в архив?"
-          description="Будет архивирована после создания."
+          description="Будет архивирована после сохранения."
           class="mt-5"
         />
         <!-- /Archive -->

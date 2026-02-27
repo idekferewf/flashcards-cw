@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useCardStore } from "@/store/card.store.ts"
 import type { ICard } from "@/types"
-import { computed, ref, watch } from "vue"
+import { computed, nextTick, ref, watch } from "vue"
 
 const card = defineModel<ICard | null>("card")
 
@@ -33,7 +33,13 @@ const onSubmit = () => {
 }
 
 watch(card, value => {
-  if (value) cardName.value = value.front
+  if (value) {
+    cardName.value = value.front
+    nextTick(() => {
+      const cancelButton: HTMLButtonElement | null = document.querySelector(".cancel-button")
+      cancelButton?.focus()
+    })
+  }
 })
 </script>
 
@@ -41,7 +47,7 @@ watch(card, value => {
   <UModal
     v-model:open="open"
     title="Удаление карточки"
-    :ui="{ description: 'mt-2', content: 'divide-none', body: '!pt-0 sm:pb-5' }"
+    :ui="{ description: 'mt-2', content: 'divide-none', body: '!pt-0 sm:pb-5', header: 'pb-3' }"
   >
     <!-- Trigger -->
     <slot />
@@ -52,8 +58,14 @@ watch(card, value => {
     </template>
 
     <template #body>
-      <div class="flex justify-end gap-2">
-        <UButton label="Отмена" color="neutral" variant="subtle" class="px-4" @click="open = false" />
+      <div class="flex justify-end gap-2 pt-1">
+        <UButton
+          label="Отмена"
+          color="neutral"
+          variant="subtle"
+          class="cancel-button focus:ring-inverted px-4 focus:ring-2"
+          @click="open = false"
+        />
         <UButton label="Удалить" color="error" variant="solid" class="px-4" @click="onSubmit" />
       </div>
     </template>

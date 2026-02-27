@@ -3,7 +3,7 @@ import { useCardStore } from "@/store/card.store.ts"
 import type { ICard } from "@/types"
 import { pluralize } from "@/utils"
 import { useResizeObserver } from "@vueuse/core"
-import { computed, ref, useTemplateRef, watch } from "vue"
+import { computed, nextTick, ref, useTemplateRef, watch } from "vue"
 
 const props = defineProps<{
   cards: ICard[]
@@ -46,6 +46,10 @@ watch(
 watch(open, value => {
   if (value) {
     cardsToBack.value = new Set()
+    nextTick(() => {
+      const cancelButton: HTMLButtonElement | null = document.querySelector(".cancel-button")
+      cancelButton?.focus()
+    })
   }
 })
 
@@ -90,21 +94,16 @@ useResizeObserver(cardsToDeleteRef, () => {
 
       <!-- Footer -->
       <div class="mt-3.5 flex justify-end gap-2">
-        <UButton label="Отмена" color="neutral" variant="subtle" class="px-4" @click="open = false" />
+        <UButton
+          label="Отмена"
+          color="neutral"
+          variant="subtle"
+          class="cancel-button focus:ring-inverted px-4 focus:ring-2"
+          @click="open = false"
+        />
         <UButton label="Удалить" color="error" variant="solid" loading-auto class="px-4" @click="onSubmit" />
       </div>
       <!-- /Footer -->
     </template>
   </UModal>
 </template>
-
-<style scoped>
-::-webkit-scrollbar {
-  width: 2px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--ui-color-neutral-300);
-  border-radius: 4px;
-}
-</style>

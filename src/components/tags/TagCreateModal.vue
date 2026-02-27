@@ -6,7 +6,7 @@ import type { RadioGroupItem } from "@nuxt/ui"
 import { useToast } from "@nuxt/ui/composables"
 import { useRegle } from "@regle/core"
 import { minLength, required, withMessage } from "@regle/rules"
-import { computed, nextTick, ref, useTemplateRef, watch } from "vue"
+import { computed, ref } from "vue"
 
 const props = defineProps<{
   description?: string
@@ -21,8 +21,6 @@ const open = defineModel<boolean>({ default: false })
 
 const toast = useToast()
 const tagStore = useTagStore()
-
-const labelRef = useTemplateRef("label")
 
 const { r$ } = useRegle(
   { label: "", color: "neutral" },
@@ -101,14 +99,6 @@ const radioItems = ref<RadioGroupItem[]>([
     value: "neutral"
   }
 ])
-
-watch(open, value => {
-  if (open.value) {
-    nextTick(() => {
-      labelRef.value?.inputRef?.focus()
-    })
-  }
-})
 </script>
 
 <template>
@@ -132,7 +122,7 @@ watch(open, value => {
               <span>Название</span>
             </div>
           </template>
-          <UInput ref="label" v-model="r$.$value.label" placeholder="Введите название" class="w-full" />
+          <UInput v-model="r$.$value.label" autofocus placeholder="Введите название" class="w-full" />
         </UFormField>
         <!-- /Label -->
 

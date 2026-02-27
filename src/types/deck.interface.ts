@@ -11,3 +11,5 @@ export interface IDeck {
 }
 
 export type TDeckCreateDTO = Omit<IDeck, "id" | "createdAt" | "updatedAt">
+
+export type TDeckUpdateDTO = Partial<TDeckCreateDTO>

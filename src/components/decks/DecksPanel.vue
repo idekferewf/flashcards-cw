@@ -12,6 +12,10 @@ const props = defineProps<{
   archivedDecks: IDeck[]
 }>()
 
+const emit = defineEmits<{
+  clickCreateDeck: []
+}>()
+
 const selectedDeck = defineModel<IDeck | null>()
 const archiveOpen = defineModel<boolean>("archiveOpen", { default: false })
 
@@ -187,7 +191,20 @@ useResizeObserver(scrollRef, () => {
       <!-- /Archive Header -->
 
       <!-- Archive Content -->
-      <DeckList ref="archivedListRef" :decks="archivedDecks" :selected-id="selectedDeck?.id" @select="deck => selectDeck(deck)" />
+      <DeckList
+        v-if="archivedDecks.length"
+        ref="archivedListRef"
+        :decks="archivedDecks"
+        :selected-id="selectedDeck?.id"
+        @select="deck => selectDeck(deck)"
+      />
+      <div
+        v-else
+        class="text-default flex w-full flex-col items-center justify-center gap-y-2.5 px-4 py-6 text-center text-sm sm:px-6"
+      >
+        <span>Не найдено ни одной колоды.</span>
+        <UButton label="Создать колоду" icon="i-lucide-plus" size="sm" color="neutral" @click="emit('clickCreateDeck')" />
+      </div>
       <!-- /Archive Content -->
     </div>
     <!-- /Archive -->
@@ -227,7 +244,7 @@ useResizeObserver(scrollRef, () => {
         class="text-default flex w-full flex-col items-center justify-center gap-y-2.5 px-4 py-6 text-center text-sm sm:px-6"
       >
         <span>Не найдено ни одной колоды.</span>
-        <UButton label="Создать колоду" icon="i-lucide-plus" size="sm" color="neutral" />
+        <UButton label="Создать колоду" icon="i-lucide-plus" size="sm" color="neutral" @click="emit('clickCreateDeck')" />
       </div>
       <!-- /Decks -->
     </div>

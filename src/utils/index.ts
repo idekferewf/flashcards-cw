@@ -22,5 +22,8 @@ export function normalizeLabel(label: string): string {
 }
 
 export function isOverlayOpen() {
-  return !!document.querySelector('[data-slot="overlay"][data-state="open"]')
+  return !!(
+    document.querySelector('[data-slot="overlay"][data-state="open"]') ||
+    document.querySelector('[data-reka-popper-content-wrapper] [data-state="open"]')
+  )
 }
