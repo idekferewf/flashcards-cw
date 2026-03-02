@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import Logo from "@/components/Logo.vue"
 import { ROUTES } from "@/constants"
-import type { NavigationMenuItem, ToasterProps } from "@nuxt/ui"
+import type { CommandPaletteGroup, NavigationMenuItem, ToasterProps } from "@nuxt/ui"
 import { ref, watch } from "vue"
 
 const toaster: ToasterProps = { position: "bottom-center" }
@@ -65,6 +65,23 @@ const items: NavigationMenuItem[][] = [
     }
   ]
 ]
+
+const groups = ref<CommandPaletteGroup[]>([
+  {
+    id: 'theme',
+    label: 'Тема',
+    items: [
+      {
+        label: 'Светлая',
+        icon: 'i-lucide-sub'
+      },
+      {
+        label: 'Тёмная',
+        icon: 'i-lucide-moon'
+      }
+    ]
+  }
+])
 </script>
 
 <template>
@@ -119,7 +136,11 @@ const items: NavigationMenuItem[][] = [
       <!-- /Global sidebar -->
 
       <!-- Search modal -->
-      <UDashboardSearch placeholder="Выполните поиск..." />
+      <UDashboardSearch :color-mode='false' :groups='groups' placeholder="Выполните поиск...">
+        <template #empty>
+          Ничего не найдено
+        </template>
+        </UDashboardSearch>
       <!-- /Search modal -->
 
       <!-- Router view -->

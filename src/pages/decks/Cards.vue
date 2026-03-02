@@ -187,7 +187,7 @@ const columns: TableColumn<ICard>[] = [
           row.original.front,
           row.original.isPinned ? h(UIcon, { name: "i-lucide-pin", class: "text-dimmed inline ml-1.5" }) : undefined
         ]),
-        row.original.tags ? h(TagList, { class: "mt-2 text-[10px] max-w-[400px]", tags: row.original.tags }) : undefined
+        row.original.tags ? h(TagList, { class: "mt-2 text-[11px] max-w-[400px]", tags: row.original.tags }) : undefined
       ])
     }
   },

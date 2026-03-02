@@ -4,7 +4,7 @@ import { useTagStore } from "@/store/tag.store.ts"
 import type { IDeck, ITag, TDeckUpdateDTO } from "@/types"
 import { useRegle } from "@regle/core"
 import { boolean, maxLength, minLength, withMessage } from "@regle/rules"
-import { useTemplateRef, watch } from "vue"
+import { computed, useTemplateRef, watch } from "vue"
 
 const props = defineProps<{
   deck: IDeck
@@ -38,6 +38,17 @@ const { r$ } = useRegle(
     favorite: { boolean }
   }
 )
+
+const hasChanges = computed<boolean>(() => {
+  return (
+    r$.$value.name !== props.deck.name ||
+    r$.$value.description !== props.deck.description ||
+    r$.$value.archive !== props.deck.isArchived ||
+    r$.$value.favorite !== props.deck.isFavorite ||
+    r$.$value.tags.map(t => t.id).length !== props.deck.tagIds.length ||
+    !r$.$value.tags.map(t => t.id).every((value, index) => value === props.deck.tagIds[index])
+  );
+});
 
 const onSubmit = async () => {
   const { valid, data } = await r$.$validate()
@@ -158,7 +169,7 @@ watch(
             <!-- Tags -->
             <span v-if="!r$.$value.tags.length" class="text-muted text-sm">Теги не добавлены</span>
             <div v-else class="flex flex-wrap items-center gap-1.5 text-xs">
-              <Tag v-for="tag in r$.$value.tags as ITag[]" :key="tag.id" :tag="tag" class="pr-1">
+              <Tag v-for="tag in r$.$value.tags as ITag[]" :key="tag.id" :tag="tag" class="pr-1 pb-1">
                 <button
                   tabindex="-1"
                   type="button"
@@ -233,7 +244,7 @@ watch(
 
     <template #footer>
       <UButton size="lg" label="Отмена" variant="outline" color="neutral" @click="close" />
-      <UButton size="lg" label="Сохранить" color="neutral" @click="onSubmit" />
+      <UButton size="lg" label="Сохранить" color="neutral" @click="onSubmit" :disabled='!hasChanges' />
     </template>
   </USlideover>
 </template>
