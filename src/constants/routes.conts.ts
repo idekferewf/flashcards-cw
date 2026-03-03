@@ -23,6 +23,11 @@ export const ROUTES = {
         name: "decks-settings",
         path: ":deckId/settings",
         fullPath: (id: string) => `${DECKS_BASE_PATH}/${id}/settings`
+      },
+      createCard: {
+        name: "decks-create-card",
+        path: ":deckId/create-card",
+        fullPath: (id: string) => `${DECKS_BASE_PATH}/${id}/create-card`
       }
     }
   }

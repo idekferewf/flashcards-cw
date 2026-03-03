@@ -5,6 +5,7 @@ import { useTagStore } from "@/store/tag.store.ts"
 import type { IDeck, ITag } from "@/types"
 import type { DropdownMenuItem, NavigationMenuItem } from "@nuxt/ui"
 import { computed, ref } from "vue"
+import { useRoute } from "vue-router"
 
 const props = defineProps<{
   deck: IDeck
@@ -13,6 +14,7 @@ const props = defineProps<{
 const emit = defineEmits(["close"])
 
 const toast = useToast()
+const route = useRoute()
 const deckStore = useDeckStore()
 const tagStore = useTagStore()
 
@@ -76,7 +78,17 @@ const toolbarLinks = computed<NavigationMenuItem[]>(() => [
     label: "Настройки",
     icon: "i-lucide-settings",
     to: ROUTES.DECKS.children.settings.fullPath(props.deck?.id ?? "")
-  }
+  },
+  ...(route.name === ROUTES.DECKS.children.createCard.name
+    ? [
+        {
+          label: "Создание карточки",
+          icon: "i-lucide-square-plus",
+          to: ROUTES.DECKS.children.createCard.fullPath(props.deck?.id ?? ""),
+          ui: { item: "ml-auto" }
+        }
+      ]
+    : [])
 ])
 
 defineShortcuts({
@@ -141,12 +153,26 @@ defineShortcuts({
           <UDropdownMenu :modal="false" arrow :content="{ align: 'end', sideOffset: 4 }" :items="dropdownItems">
             <UButton icon="i-lucide-ellipsis" color="neutral" variant="ghost" />
           </UDropdownMenu>
+
+          <USeparator orientation="vertical" class="h-4 px-2" />
+
+          <!-- Create Card -->
+          <UTooltip text="Добавить карточку" :kbds="['alt', 'n']">
+            <UButton
+              :to="{ name: ROUTES.DECKS.children.createCard.name }"
+              color="neutral"
+              square
+              icon="i-lucide-plus"
+              class="rounded-full"
+            />
+          </UTooltip>
+          <!-- /Create Card -->
         </template>
         <!-- /Right actions -->
       </UDashboardNavbar>
 
       <UDashboardToolbar>
-        <UNavigationMenu :items="toolbarLinks" highlight class="flex-1" />
+        <UNavigationMenu :items="toolbarLinks" highlight class="w-full [&>div]:w-full" />
       </UDashboardToolbar>
     </template>
 

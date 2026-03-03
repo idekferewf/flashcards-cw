@@ -150,24 +150,39 @@ const groups = computed<CommandPaletteGroup[]>(() => [
       <UDashboardSearch
         :color-mode="false"
         :groups="groups"
-        placeholder="Выполните поиск..."
-        :ui="{ input: '[&>input]:placeholder:text-[15px]' }"
+        placeholder="Что вы ищите?"
+        :ui="{
+          input: '[&>input]:placeholder:text-[15px]',
+          root: 'h-full divide-none px-1 py-0.5',
+          content: 'flex-1',
+          empty: 'h-full'
+        }"
       >
-        <template #empty>Ничего не найдено</template>
+        <template #empty="{ searchTerm }">
+          <div class="flex h-full flex-col items-center justify-center">
+            <UIcon name="i-lucide-lightbulb-off" class="size-32" />
+            <span class="text-default mt-4">Ничего не найдено</span>
+            <span class="text-muted mt-2 line-clamp-2 max-w-[300px]">
+              По запросу <u>{{ searchTerm }}</u> ничего не найдено
+            </span>
+          </div>
+        </template>
         <template #footer>
-          <div class="flex items-center justify-end gap-1">
-            <UButton color="neutral" variant="ghost" label="Выполнить команду" class="text-dimmed" size="xs">
-              <template #trailing>
-                <UKbd value="enter" />
-              </template>
-            </UButton>
+          <div class="flex items-center justify-center gap-2.5 py-2.5">
+            <div class="text-muted flex cursor-default items-center gap-x-1 text-xs">
+              <UIcon name="i-lucide-corner-down-left" class="text-dimmed size-3.5" />
+              Выбрать
+            </div>
             <USeparator orientation="vertical" class="h-4" />
-            <UButton color="neutral" variant="ghost" label="Действия" class="text-dimmed" size="xs">
-              <template #trailing>
-                <UKbd value="meta" />
-                <UKbd value="k" />
-              </template>
-            </UButton>
+            <div class="text-muted flex cursor-default items-center gap-x-1 text-xs">
+              <UIcon name="i-lucide-arrow-up-down" class="text-dimmed size-3.5" />
+              Навигация
+            </div>
+            <USeparator orientation="vertical" class="h-4" />
+            <div class="text-muted flex cursor-default items-center gap-x-1 text-xs">
+              <code class="text-dimmed font-medium">ESC</code>
+              Закрыть
+            </div>
           </div>
         </template>
       </UDashboardSearch>

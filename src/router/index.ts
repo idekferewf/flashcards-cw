@@ -28,6 +28,11 @@ const routes = [
         name: ROUTES.DECKS.children.settings.name,
         path: ROUTES.DECKS.children.settings.path,
         component: () => import("@/pages/decks/Settings.vue")
+      },
+      {
+        name: ROUTES.DECKS.children.createCard.name,
+        path: ROUTES.DECKS.children.createCard.path,
+        component: () => import("@/pages/decks/CreateCard.vue")
       }
     ]
   }
