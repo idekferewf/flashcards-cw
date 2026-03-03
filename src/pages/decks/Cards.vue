@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ROUTES } from "@/constants"
 import { useCardStore } from "@/store/card.store"
 import { CardStatus, CardStatusLabels, type ICard, type IDeck } from "@/types"
 import type { SelectMenuItem, TableColumn } from "@nuxt/ui"
@@ -366,7 +367,13 @@ const meta: TableMeta<ICard> = {
     <template #empty>
       <div class="flex w-full flex-col items-center justify-center gap-2.5">
         <span>Не найдено ни одной карточки.</span>
-        <UButton icon="i-lucide-plus" label="Добавить карточку" size="sm" color="neutral" />
+        <UButton
+          :to="{ name: ROUTES.DECKS.children.createCard.name }"
+          icon="i-lucide-plus"
+          label="Добавить карточку"
+          size="sm"
+          color="neutral"
+        />
       </div>
     </template>
   </UTable>

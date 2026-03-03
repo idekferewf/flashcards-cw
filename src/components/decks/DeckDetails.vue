@@ -5,7 +5,7 @@ import { useTagStore } from "@/store/tag.store.ts"
 import type { IDeck, ITag } from "@/types"
 import type { DropdownMenuItem, NavigationMenuItem } from "@nuxt/ui"
 import { computed, ref } from "vue"
-import { useRoute } from "vue-router"
+import { useRoute, useRouter } from "vue-router"
 
 const props = defineProps<{
   deck: IDeck
@@ -14,6 +14,7 @@ const props = defineProps<{
 const emit = defineEmits(["close"])
 
 const toast = useToast()
+const router = useRouter()
 const route = useRoute()
 const deckStore = useDeckStore()
 const tagStore = useTagStore()
@@ -97,7 +98,8 @@ defineShortcuts({
     handler: () => (isEditModalOpen.value = !isEditModalOpen.value),
     usingInput: true
   },
-  delete: () => openDeleteModal()
+  delete: () => openDeleteModal(),
+  alt_n: () => router.push({ name: ROUTES.DECKS.children.createCard.name })
 })
 </script>
 
