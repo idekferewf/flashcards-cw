@@ -2,7 +2,8 @@
 import Logo from "@/components/Logo.vue"
 import { ROUTES } from "@/constants"
 import type { CommandPaletteGroup, NavigationMenuItem, ToasterProps } from "@nuxt/ui"
-import { ref, watch } from "vue"
+import { useColorMode } from "@vueuse/core"
+import { computed, ref, watch } from "vue"
 
 const toaster: ToasterProps = { position: "bottom-center" }
 
@@ -11,7 +12,13 @@ const menuItemUI: NavigationMenuItem["ui"] = {
   linkLabel: "ml-1.5 -mb-0.5"
 }
 
+const colorMode = useColorMode()
+
 const isCollapsed = ref<boolean>(false)
+
+const changeTheme = (theme: "dark" | "light") => {
+  colorMode.value = theme
+}
 
 watch(isCollapsed, (newValue: boolean) => {
   menuItemUI.link = newValue ? "py-2" : "py-2.5"
@@ -66,18 +73,22 @@ const items: NavigationMenuItem[][] = [
   ]
 ]
 
-const groups = ref<CommandPaletteGroup[]>([
+const groups = computed<CommandPaletteGroup[]>(() => [
   {
-    id: 'theme',
-    label: 'Тема',
+    id: "theme",
+    label: "Тема",
     items: [
       {
-        label: 'Светлая',
-        icon: 'i-lucide-sub'
+        label: "Светлая",
+        icon: "i-lucide-sun",
+        disabled: colorMode.value === "light",
+        onSelect: () => changeTheme("light")
       },
       {
-        label: 'Тёмная',
-        icon: 'i-lucide-moon'
+        label: "Тёмная",
+        icon: "i-lucide-moon",
+        disabled: colorMode.value === "dark",
+        onSelect: () => changeTheme("dark")
       }
     ]
   }
@@ -136,11 +147,30 @@ const groups = ref<CommandPaletteGroup[]>([
       <!-- /Global sidebar -->
 
       <!-- Search modal -->
-      <UDashboardSearch :color-mode='false' :groups='groups' placeholder="Выполните поиск...">
-        <template #empty>
-          Ничего не найдено
+      <UDashboardSearch
+        :color-mode="false"
+        :groups="groups"
+        placeholder="Выполните поиск..."
+        :ui="{ input: '[&>input]:placeholder:text-[15px]' }"
+      >
+        <template #empty>Ничего не найдено</template>
+        <template #footer>
+          <div class="flex items-center justify-end gap-1">
+            <UButton color="neutral" variant="ghost" label="Выполнить команду" class="text-dimmed" size="xs">
+              <template #trailing>
+                <UKbd value="enter" />
+              </template>
+            </UButton>
+            <USeparator orientation="vertical" class="h-4" />
+            <UButton color="neutral" variant="ghost" label="Действия" class="text-dimmed" size="xs">
+              <template #trailing>
+                <UKbd value="meta" />
+                <UKbd value="k" />
+              </template>
+            </UButton>
+          </div>
         </template>
-        </UDashboardSearch>
+      </UDashboardSearch>
       <!-- /Search modal -->
 
       <!-- Router view -->

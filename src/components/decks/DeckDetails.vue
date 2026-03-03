@@ -101,7 +101,7 @@ defineShortcuts({
         </template>
         <template #title>
           <h1>{{ deck.name }}</h1>
-          <TagList v-if="tags.length" :tags="tags.slice(0, 4)" class="ml-1.5 !gap-1.5 truncate !flex-nowrap text-[11px]" />
+          <TagList v-if="tags.length" :tags="tags.slice(0, 4)" class="ml-1.5 !flex-nowrap !gap-1.5 truncate text-[11px]" />
           <span v-if="tags.length > 4" class="text-toned ml-0.5">...</span>
         </template>
         <!-- /Name -->

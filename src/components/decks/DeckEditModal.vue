@@ -47,8 +47,8 @@ const hasChanges = computed<boolean>(() => {
     r$.$value.favorite !== props.deck.isFavorite ||
     r$.$value.tags.map(t => t.id).length !== props.deck.tagIds.length ||
     !r$.$value.tags.map(t => t.id).every((value, index) => value === props.deck.tagIds[index])
-  );
-});
+  )
+})
 
 const onSubmit = async () => {
   const { valid, data } = await r$.$validate()
@@ -244,7 +244,7 @@ watch(
 
     <template #footer>
       <UButton size="lg" label="Отмена" variant="outline" color="neutral" @click="close" />
-      <UButton size="lg" label="Сохранить" color="neutral" @click="onSubmit" :disabled='!hasChanges' />
+      <UButton size="lg" label="Сохранить" color="neutral" :disabled="!hasChanges" @click="onSubmit" />
     </template>
   </USlideover>
 </template>
