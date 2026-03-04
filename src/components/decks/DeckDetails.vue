@@ -104,7 +104,7 @@ defineShortcuts({
 </script>
 
 <template>
-  <UDashboardPanel>
+  <UDashboardPanel :ui="{ body: 'overflow-x-hidden scrollbar-4px' }">
     <template #header>
       <UDashboardNavbar :toggle="false">
         <!-- Name -->

@@ -67,3 +67,7 @@
 ::-webkit-scrollbar-thumb:hover {
   background: var(--ui-color-neutral-100);
 }
+
+.scrollbar-4px::-webkit-scrollbar {
+  width: 4px;
+}
