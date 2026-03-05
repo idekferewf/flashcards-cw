@@ -1,5 +1,5 @@
 import { CardsTD } from "@/store/temp-data.ts"
-import { CardStatus, type ICard, type TCardCreateDTO } from "@/types"
+import { CardStatus, type ICard, type TCardCreateDTO, type TCardUpdateDTO } from "@/types"
 import { type StorageLikeAsync, useStorageAsync } from "@vueuse/core"
 import localforage from "localforage"
 import { defineStore } from "pinia"
@@ -36,6 +36,19 @@ export const useCardStore = defineStore("cards", () => {
     return newDeck
   }
 
+  function updateDeck(id: string, data: TCardUpdateDTO): ICard {
+    const card = cards.value.find(d => d.id === id)
+    if (!card) throw new Error(`Card with id "${id}" not found`)
+
+    const updatedCard: ICard = {
+      ...card,
+      ...data,
+      updatedAt: new Date().toISOString()
+    }
+    cards.value = cards.value.map(d => (d.id === id ? updatedCard : d))
+    return updatedCard
+  }
+
   function removeCard(id: string): void {
     cards.value = cards.value.filter(c => c.id !== id)
   }
@@ -59,6 +72,7 @@ export const useCardStore = defineStore("cards", () => {
     isLoading,
     cards,
     addCard,
+    updateDeck,
     removeCard,
     removeCards,
     togglePin,

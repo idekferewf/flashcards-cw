@@ -3,6 +3,7 @@ import { ROUTES } from "@/constants"
 import { useDeckStore } from "@/store/deck.store"
 import { useTagStore } from "@/store/tag.store.ts"
 import type { IDeck, ITag } from "@/types"
+import { isOverlayOpen } from "@/utils"
 import type { DropdownMenuItem, NavigationMenuItem } from "@nuxt/ui"
 import { computed, ref } from "vue"
 import { useRoute, useRouter } from "vue-router"
@@ -93,14 +94,26 @@ const toolbarLinks = computed<NavigationMenuItem[]>(() => [
 ])
 
 defineShortcuts({
-  ctrl_escape: () => emit("close"),
+  ctrl_escape: () => {
+    if (isOverlayOpen()) return
+    emit("close")
+  },
   ctrl_e: {
-    handler: () => (isEditModalOpen.value = !isEditModalOpen.value),
+    handler: () => {
+      if (isOverlayOpen()) return
+      isEditModalOpen.value = !isEditModalOpen.value
+    },
     usingInput: true
   },
-  delete: () => openDeleteModal(),
+  delete: () => {
+    if (isOverlayOpen()) return
+    openDeleteModal()
+  },
   alt_n: {
-    handler: () => router.push({ name: ROUTES.DECKS.children.createCard.name }),
+    handler: () => {
+      if (isOverlayOpen()) return
+      router.push({ name: ROUTES.DECKS.children.createCard.name })
+    },
     usingInput: true
   }
 })

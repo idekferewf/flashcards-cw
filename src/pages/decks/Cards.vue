@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ROUTES } from "@/constants"
 import { useCardStore } from "@/store/card.store"
+import { useTagStore } from "@/store/tag.store"
 import { CardStatus, CardStatusLabels, type ICard, type IDeck } from "@/types"
 import type { SelectMenuItem, TableColumn } from "@nuxt/ui"
 import { useToast } from "@nuxt/ui/composables"
@@ -36,8 +37,8 @@ const tagStore = useTagStore()
 
 const table = useTemplateRef("table")
 
-const deleteOpen = ref<boolean>(false)
 const cardToDelete = ref<ICard | null>(null)
+const cardToEdit = ref<ICard | null>(null)
 
 const sortingState = ref<SortingState>([
   { id: "isPinned", desc: true },
@@ -95,7 +96,10 @@ const getRowItems = (row: Row<ICard>) => {
     },
     {
       label: "Редактировать",
-      icon: "i-lucide-file-pen"
+      icon: "i-lucide-file-pen",
+      onSelect() {
+        cardToEdit.value = row.original
+      }
     },
     {
       label: "Копировать ID",
@@ -117,7 +121,6 @@ const getRowItems = (row: Row<ICard>) => {
       icon: "i-lucide-trash",
       color: "error",
       onSelect() {
-        deleteOpen.value = true
         cardToDelete.value = row.original
       }
     }
@@ -397,6 +400,10 @@ const meta: TableMeta<ICard> = {
     </div>
   </div>
   <!-- /Pagination -->
+
+  <!-- Edit Card Modal -->
+  <CardEditModal v-model:card="cardToEdit" />
+  <!-- /Edit Card Modal -->
 
   <!-- Single delete modal -->
   <CardDeleteModal v-model:card="cardToDelete" />
