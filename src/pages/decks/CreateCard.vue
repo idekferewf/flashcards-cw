@@ -1,99 +1,151 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { useLeaveConfirm } from "@/composables/use-leave-confirm.composable"
+import { ROUTES } from "@/constants"
+import { useCardStore } from "@/store/card.store"
+import type { IDeck, ITag, TCardCreateDTO } from "@/types"
+import { useRegle } from "@regle/core"
+import { boolean, required, withMessage } from "@regle/rules"
+import { useRouter } from "vue-router"
+
+const props = defineProps<{
+  deck: IDeck
+}>()
+
+const router = useRouter()
+const cardStore = useCardStore()
+const { isOpen, onConfirm, onCancel } = useLeaveConfirm(() => r$.$anyEdited)
+
+const { r$ } = useRegle(
+  {
+    front: "",
+    back: "",
+    tags: [] as ITag[],
+    pin: false
+  },
+  {
+    front: {
+      required: withMessage(required, "Данное поле обязательно для заполнения.")
+    },
+    back: {
+      required: withMessage(required, "Данное поле обязательно для заполнения.")
+    },
+    pin: { boolean }
+  }
+)
+
+const onSubmit = async () => {
+  const { valid, data } = await r$.$validate()
+  if (!valid) return
+
+  const cardCreateDTO: TCardCreateDTO = {
+    front: data.front,
+    back: data.back,
+    deckId: props.deck.id,
+    isPinned: data.pin ?? false,
+    tagIds: (data.tags as ITag[]).map(t => t.id)
+  }
+  cardStore.addCard(cardCreateDTO)
+
+  close()
+  r$.$reset({ toInitialState: true })
+}
+
+const close = () => {
+  router.push({ name: ROUTES.DECKS.children.index.name })
+}
+</script>
 
 <template>
-  <div class="relative mx-auto h-full w-full px-3.5">
+  <UForm :schema="r$" :state="r$.$value" class="relative mx-auto h-full w-full px-3.5" @submit="onSubmit">
+    <!-- Header -->
     <h1 class="text-base font-medium">Создание карточки</h1>
     <p class="text-muted mt-0.5 text-[13px]">Заполните поля ниже, чтобы добавить карточку.</p>
+    <!-- /Header -->
 
     <USeparator class="-mx-20 w-auto py-4 sm:py-6" />
 
+    <!-- Front -->
     <UFormField
       orientation="horizontal"
       label="Вопрос"
       description="Лицевая сторона"
       required
-      help="Please enter a valid email address."
+      name="front"
+      help="Сформулируйте вопрос коротко и понятно."
       class="w-full gap-x-10 [&>div]:w-full"
-      :ui="{ wrapper: 'max-w-30', description: 'whitespace-nowrap' }"
+      :ui="{ wrapper: 'max-w-38', description: 'whitespace-nowrap' }"
     >
-      <UTextarea :rows="3" placeholder="Enter your email" class="w-full" :ui="{ base: 'max-h-24 min-h-8' }" />
+      <UTextarea
+        v-model.trim="r$.$value.front"
+        autofocus
+        :rows="3"
+        placeholder="Введите вопрос..."
+        class="w-full"
+        :ui="{ base: 'max-h-24 min-h-8' }"
+      />
     </UFormField>
+    <!-- /Front -->
 
+    <!-- Back -->
     <UFormField
       orientation="horizontal"
       label="Ответ"
       description="Оборотная сторона"
       required
-      help="Please enter a valid email address."
+      name="back"
+      help="Правильный ответ или объяснение."
       class="mt-6 w-full gap-x-10 [&>div]:w-full"
-      :ui="{ wrapper: 'max-w-30', description: 'whitespace-nowrap' }"
+      :ui="{ wrapper: 'max-w-38', description: 'whitespace-nowrap' }"
     >
-      <UTextarea :rows="4" placeholder="Enter your email" class="w-full" :ui="{ base: 'max-h-32 min-h-8' }" />
+      <UTextarea
+        v-model.trim="r$.$value.back"
+        :rows="4"
+        placeholder="Напишите ответ..."
+        class="w-full"
+        :ui="{ base: 'max-h-32 min-h-8' }"
+      />
     </UFormField>
+    <!-- /Back -->
 
     <USeparator class="-mx-20 w-auto py-4 sm:py-6" />
-
     <p class="text-default block text-base font-medium">
       <UIcon name="i-lucide-settings-2" class="mr-1 inline-block size-5" />
       Дополнительно
     </p>
 
-    <UFormField
+    <!-- Tags -->
+    <CreateTagForm
+      v-model:tags="r$.$value.tags"
       orientation="horizontal"
       label="Теги"
-      required
-      description="..."
-      help="Please enter a valid email address."
-      class="mt-2 w-full gap-x-10 [&>div]:w-full"
-      :ui="{ wrapper: 'max-w-30', description: 'whitespace-nowrap', label: 'after:text-muted' }"
-    >
-      <div class="mt-3.5 flex flex-wrap items-center gap-2">
-        <!-- Tags -->
-        <span class="text-muted text-sm">Теги не добавлены</span>
-        <!-- /Tags -->
+      description="Тематические метки"
+      help="Помогают группировать и находить карточки."
+      class="mt-7 w-full gap-x-10 [&>div]:w-full"
+      :ui="{ wrapper: 'max-w-38', description: 'whitespace-nowrap' }"
+    />
+    <!-- /Tags -->
 
-        <!-- Select Tag -->
-        <USelectMenu
-          multiple
-          size="sm"
-          :search-input="{ placeholder: 'Искать...', icon: 'i-lucide-search' }"
-          icon="i-lucide-tag"
-          variant="outline"
-          :ui="{ value: 'hidden' }"
-          class="bg-muted/90"
-        >
-          <template #empty>Ничего не найдено</template>
-          <span class="text-dimmed">Выбрать теги</span>
-        </USelectMenu>
-        <!-- Select Tag -->
-
-        <!-- Create Tag -->
-        <TagCreateModal
-          description="Тег будет добавлен в колоду после создания."
-          exist-description="Вы можете выбрать его в форме создания колоды."
-        >
-          <UButton label="Добавить тег" icon="i-lucide-plus" variant="soft" color="neutral" size="sm" />
-        </TagCreateModal>
-        <!-- /Create Tag -->
-      </div>
-    </UFormField>
-
+    <!-- Pin -->
     <UFormField
       orientation="horizontal"
       label="Закрепить?"
-      description="..."
-      required
-      help="Please enter a valid email address."
+      help="Подходит для важных или сложных карточек."
       class="mt-8 w-full gap-x-10 [&>div]:w-full"
-      :ui="{ wrapper: 'max-w-30', description: 'whitespace-nowrap', label: 'after:text-muted' }"
+      :ui="{ wrapper: 'max-w-38' }"
     >
-      <USwitch checked-icon="i-lucide-check" description="Будет закреплена после создания." />
+      <USwitch v-model="r$.$value.pin" checked-icon="i-lucide-check" description="Будет закреплена после создания" />
     </UFormField>
-  </div>
+    <!-- Pin -->
+  </UForm>
 
+  <!-- Footer -->
   <div
-    class="border-t-default bg-default absolute bottom-0 left-0 flex w-full items-center justify-end border-t px-[30px] py-4 sm:px-[38px]"
+    class="border-t-default bg-default absolute bottom-0 left-0 flex w-full items-center justify-end gap-x-2.5 border-t px-[30px] py-4 sm:px-[38px]"
   >
-    <UButton size="lg" label="Создать" color="neutral" />
+    <UButton size="lg" label="Закрыть" color="neutral" variant="outline" @click="close" />
+    <UButton size="lg" label="Создать" color="neutral" :disabled="!r$.$correct" @click="onSubmit" />
   </div>
+  <!-- /Footer -->
+
+  <LeaveConfirmModal :open="isOpen" @confirm="onConfirm" @cancel="onCancel" />
 </template>

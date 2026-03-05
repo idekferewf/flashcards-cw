@@ -22,6 +22,7 @@ export interface ICard {
   front: string
   back: string
   tags?: ITag[]
+  tagIds?: string[]
   isPinned?: boolean
 
   status?: CardStatus
@@ -36,3 +37,7 @@ export interface ICard {
   createdAt: string
   updatedAt?: string
 }
+
+export type TCardCreateDTO = Omit<ICard, "id" | "dueAt" | "createdAt" | "updatedAt">
+
+export type TCardUpdateDTO = Partial<TCardCreateDTO>
