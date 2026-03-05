@@ -12,7 +12,7 @@ const props = defineProps<{
 
 const tagStore = useTagStore()
 
-const tags = computed<ITag[]>(() => tagStore.getTagsByDeck(props.deck))
+const tags = computed<ITag[]>(() => tagStore.getTagsByDeckOrCard(props.deck))
 </script>
 
 <template>

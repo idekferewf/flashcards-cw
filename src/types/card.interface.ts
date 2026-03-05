@@ -1,5 +1,3 @@
-import type { ITag } from "@/types"
-
 export const CardStatus = {
   new: "new",
   learning: "learning",
@@ -21,8 +19,7 @@ export interface ICard {
   deckId: string
   front: string
   back: string
-  tags?: ITag[]
-  tagIds?: string[]
+  tagIds: string[]
   isPinned?: boolean
 
   status?: CardStatus
@@ -33,7 +30,7 @@ export interface ICard {
   repetitions?: number
   lapses?: number
 
-  dueAt?: string
+  dueAt: string
   createdAt: string
   updatedAt?: string
 }

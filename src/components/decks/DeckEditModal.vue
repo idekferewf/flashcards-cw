@@ -21,7 +21,7 @@ const { r$ } = useRegle(
   {
     name: props.deck.name,
     description: props.deck.description ?? "",
-    tags: tagStore.getTagsByDeck(props.deck),
+    tags: tagStore.getTagsByDeckOrCard(props.deck),
     archive: props.deck.isArchived ?? false,
     favorite: props.deck.isFavorite ?? false
   },
@@ -76,7 +76,7 @@ watch(
     if (!open) return
     r$.$value.name = deck.name
     r$.$value.description = deck.description ?? ""
-    r$.$value.tags = tagStore.getTagsByDeck(deck)
+    r$.$value.tags = tagStore.getTagsByDeckOrCard(deck)
     r$.$value.archive = deck.isArchived ?? false
     r$.$value.favorite = deck.isFavorite ?? false
     r$.$reset()
@@ -152,7 +152,7 @@ watch(
 
         <USeparator />
 
-        <p class="text-default block text-sm font-medium">Дополнительно</p>
+        <p class="text-default block text-[15px] font-medium">Дополнительно</p>
 
         <!-- Favorite -->
         <USwitch

@@ -1,11 +1,11 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { ROUTES } from "@/constants"
+import { useRouter } from "vue-router"
+
+const router = useRouter()
+router.push({ name: ROUTES.DECKS.name })
+</script>
 
 <template>
-  <UPage>
-    <UHeader title="" class="absolute w-full">
-      <template #left>
-        <UDashboardSidebarCollapse />
-      </template>
-    </UHeader>
-  </UPage>
+  <div>Главная</div>
 </template>

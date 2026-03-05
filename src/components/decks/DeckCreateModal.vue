@@ -127,7 +127,7 @@ const close = () => {
         <!-- /Tags -->
 
         <USeparator />
-        <p class="text-default block text-sm font-medium">Дополнительно</p>
+        <p class="text-default block text-[15px] font-medium">Дополнительно</p>
 
         <!-- Favorite -->
         <USwitch

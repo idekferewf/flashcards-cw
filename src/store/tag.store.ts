@@ -1,5 +1,5 @@
 import { TagsTD } from "@/store/temp-data.ts"
-import type { IDeck, ITag, ITagView, TTagColor, TTagCreateDTO } from "@/types"
+import type { ICard, IDeck, ITag, ITagView, TTagColor, TTagCreateDTO } from "@/types"
 import { normalizeLabel } from "@/utils"
 import { type StorageLikeAsync, useStorageAsync } from "@vueuse/core"
 import localforage from "localforage"
@@ -39,13 +39,13 @@ export const useTagStore = defineStore("tags", () => {
     })
   }
 
-  function getTagsByDeck(deck: IDeck): ITag[] {
-    if (!deck.tagIds?.length) return []
+  function getTagsByDeckOrCard(deckOrCard: IDeck | ICard): ITag[] {
+    if (!deckOrCard.tagIds?.length) return []
 
     const result: ITag[] = []
     const map = tagMap.value
 
-    for (const id of deck.tagIds) {
+    for (const id of deckOrCard.tagIds) {
       const tag = map[id]
       if (tag) result.push(tag)
     }
@@ -80,7 +80,7 @@ export const useTagStore = defineStore("tags", () => {
     tagViews,
     addTag,
     getTag,
-    getTagsByDeck,
+    getTagsByDeckOrCard,
     getTagsByDecks
   }
 })

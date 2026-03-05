@@ -10,7 +10,6 @@ export const useCardStore = defineStore("cards", () => {
     if (!card.status) {
       card.status = CardStatus.new
     }
-    card.dueAt = card.createdAt
     card.isPinned = Math.random() > 0.5
   })
 

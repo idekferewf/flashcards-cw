@@ -22,7 +22,7 @@ const tagStore = useTagStore()
 const isEditModalOpen = ref<boolean>(false)
 const deckToDelete = ref<IDeck | null>(null)
 
-const tags = computed<ITag[]>(() => tagStore.getTagsByDeck(props.deck))
+const tags = computed<ITag[]>(() => tagStore.getTagsByDeckOrCard(props.deck))
 
 const toggleFavorite = () => {
   const wasFavorite = props.deck.isFavorite

@@ -32,6 +32,7 @@ const UCheckbox = resolveComponent("UCheckbox")
 const { copy } = useClipboard()
 const toast = useToast()
 const cardStore = useCardStore()
+const tagStore = useTagStore()
 
 const table = useTemplateRef("table")
 
@@ -183,12 +184,13 @@ const columns: TableColumn<ICard>[] = [
     accessorKey: "front",
     header: "Название",
     cell: ({ row }) => {
+      const tags = tagStore.getTagsByDeckOrCard(row.original)
       return h("div", { class: "flex flex-col" }, [
         h("p", { class: "font-medium text-highlighted" }, [
           row.original.front,
           row.original.isPinned ? h(UIcon, { name: "i-lucide-pin", class: "text-dimmed inline ml-1.5" }) : undefined
         ]),
-        row.original.tags ? h(TagList, { class: "mt-2 text-[11px] max-w-[400px]", tags: row.original.tags }) : undefined
+        tags ? h(TagList, { class: "mt-2 text-[11px] max-w-[400px]", tags }) : undefined
       ])
     }
   },

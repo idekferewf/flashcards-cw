@@ -30,7 +30,8 @@ const items: NavigationMenuItem[][] = [
       label: "Главная",
       icon: "i-lucide-home",
       to: ROUTES.INDEX.path,
-      ui: menuItemUI
+      ui: menuItemUI,
+      disabled: true
     },
     {
       label: "Колоды",
@@ -48,17 +49,6 @@ const items: NavigationMenuItem[][] = [
       icon: "i-lucide-area-chart",
       ui: menuItemUI,
       disabled: true
-    },
-    {
-      label: "Настройки",
-      icon: "i-lucide-settings",
-      ui: menuItemUI,
-      children: [
-        {
-          label: "Основные",
-          ui: menuItemUI
-        }
-      ]
     }
   ],
   [
