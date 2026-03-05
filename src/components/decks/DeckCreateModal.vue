@@ -157,7 +157,7 @@ const close = () => {
 
     <template #footer>
       <UButton size="lg" label="Отмена" variant="outline" color="neutral" @click="close" />
-      <UButton size="lg" label="Сохранить" color="neutral" @click="onSubmit" />
+      <UButton size="lg" label="Сохранить" color="neutral" :disabled="!r$.$correct" @click="onSubmit" />
     </template>
   </USlideover>
 </template>

@@ -99,7 +99,10 @@ defineShortcuts({
     usingInput: true
   },
   delete: () => openDeleteModal(),
-  alt_n: () => router.push({ name: ROUTES.DECKS.children.createCard.name })
+  alt_n: {
+    handler: () => router.push({ name: ROUTES.DECKS.children.createCard.name }),
+    usingInput: true
+  }
 })
 </script>
 
