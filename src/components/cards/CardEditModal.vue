@@ -8,6 +8,7 @@ import { computed, watch } from "vue"
 
 const card = defineModel<ICard | null>("card")
 
+const toast = useToast()
 const cardStore = useCardStore()
 const tagStore = useTagStore()
 
@@ -61,6 +62,12 @@ const onSubmit = async () => {
   cardStore.updateDeck(card.value?.id as string, cardUpdateDTO)
 
   close()
+  toast.add({
+    title: "Карточка успешно обновлена",
+    description: "Изменения были сохранены.",
+    icon: "i-lucide-circle-check",
+    color: "success"
+  })
 }
 
 const close = () => {

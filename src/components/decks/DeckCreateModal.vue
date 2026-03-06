@@ -123,7 +123,11 @@ const close = () => {
         <!-- /Description -->
 
         <!-- Tags -->
-        <CreateTagForm v-model:tags="r$.$value.tags" />
+        <CreateTagForm
+          v-model:tags="r$.$value.tags"
+          modal-description="Тег будет добавлен в колоду после создания."
+          modal-exist-description="Вы можете выбрать его в форме создания колоды."
+        />
         <!-- /Tags -->
 
         <USeparator />

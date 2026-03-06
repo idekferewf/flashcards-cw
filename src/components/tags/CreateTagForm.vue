@@ -3,7 +3,12 @@ import { useTagStore } from "@/store/tag.store"
 import type { ITag, ITagView } from "@/types"
 import type { FormFieldProps } from "@nuxt/ui"
 
-const props = defineProps<FormFieldProps>()
+const props = defineProps<
+  FormFieldProps & {
+    modalDescription?: string
+    modalExistDescription?: string
+  }
+>()
 
 const tags = defineModel<ITag[]>("tags", { required: true })
 
@@ -68,11 +73,7 @@ const onSubmit = (tag: ITag) => {
       <!-- Select -->
 
       <!-- Create -->
-      <TagCreateModal
-        description="Тег будет добавлен в колоду после создания."
-        exist-description="Вы можете выбрать его в форме создания колоды."
-        @submit="onSubmit"
-      >
+      <TagCreateModal :description="props.modalDescription" :exist-description="props.modalExistDescription" @submit="onSubmit">
         <UButton label="Добавить тег" icon="i-lucide-plus" variant="soft" color="neutral" size="sm" />
       </TagCreateModal>
       <!-- /Create -->

@@ -105,7 +105,7 @@ const radioItems = ref<RadioGroupItem[]>([
   <UModal
     v-model:open="open"
     title="Создание тега"
-    :description="description ?? 'Заполните поля ниже, чтобы создай новый тег.'"
+    :description="description ?? 'Заполните поля ниже, чтобы создать новый тег.'"
     :ui="{ footer: 'justify-end', content: 'max-w-[400px]', body: '!pt-3.5 sm:!pt-[22px]' }"
   >
     <!-- Trigger -->

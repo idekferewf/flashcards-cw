@@ -11,6 +11,7 @@ const props = defineProps<{
   deck: IDeck
 }>()
 
+const toast = useToast()
 const router = useRouter()
 const cardStore = useCardStore()
 const { isOpen, onConfirm, onCancel } = useLeaveConfirm(() => r$.$anyEdited)
@@ -48,6 +49,12 @@ const onSubmit = async () => {
 
   close()
   r$.$reset({ toInitialState: true })
+  toast.add({
+    title: "Карточка успешно создана",
+    description: "Добавленная карточка отображена в таблице.",
+    icon: "i-lucide-circle-check",
+    color: "success"
+  })
 }
 
 const close = () => {

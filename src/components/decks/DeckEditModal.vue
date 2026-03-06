@@ -12,6 +12,7 @@ const props = defineProps<{
 
 const open = defineModel<boolean>("open", { default: false })
 
+const toast = useToast()
 const deckStore = useDeckStore()
 const tagStore = useTagStore()
 
@@ -64,6 +65,12 @@ const onSubmit = async () => {
   deckStore.updateDeck(props.deck.id, deckUpdateDTO)
 
   close()
+  toast.add({
+    title: "Колода успешно обновлена",
+    description: "Изменения были сохранены.",
+    icon: "i-lucide-circle-check",
+    color: "success"
+  })
 }
 
 const close = () => {
@@ -147,7 +154,11 @@ watch(
         <!-- /Description -->
 
         <!-- Tags -->
-        <CreateTagForm v-model:tags="r$.$value.tags" />
+        <CreateTagForm
+          v-model:tags="r$.$value.tags"
+          modal-description="Тег будет добавлен в колоду после создания."
+          modal-exist-description="Вы можете выбрать его в форме создания колоды."
+        />
         <!-- /Tags -->
 
         <USeparator />
