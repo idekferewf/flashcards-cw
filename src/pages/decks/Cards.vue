@@ -17,7 +17,8 @@ import {
 import { useClipboard } from "@vueuse/core"
 import { formatRelative } from "date-fns"
 import { ru } from "date-fns/locale"
-import { computed, h, ref, resolveComponent, useTemplateRef } from "vue"
+import { computed, h, onMounted, ref, resolveComponent, useTemplateRef, watch } from "vue"
+import { useRoute } from "vue-router"
 
 const props = defineProps<{
   deck: IDeck
@@ -31,6 +32,7 @@ const UDropdownMenu = resolveComponent("UDropdownMenu")
 const UCheckbox = resolveComponent("UCheckbox")
 
 const { copy } = useClipboard()
+const route = useRoute()
 const toast = useToast()
 const cardStore = useCardStore()
 const tagStore = useTagStore()
@@ -73,6 +75,13 @@ const front = computed({
     table.value?.tableApi?.getColumn("front")?.setFilterValue(value || undefined)
   }
 })
+
+const selectRow = (cardId: string) => {
+  const row = table.value?.tableApi?.getRowModel().rows.find(row => row.original.id === cardId)
+  if (row !== undefined) {
+    table.value?.tableApi?.setRowSelection({ [row.id]: true })
+  }
+}
 
 const getRowItems = (row: Row<ICard>) => {
   const cardId = row.original.id,
@@ -193,7 +202,7 @@ const columns: TableColumn<ICard>[] = [
           row.original.front,
           row.original.isPinned ? h(UIcon, { name: "i-lucide-pin", class: "text-dimmed inline ml-1.5" }) : undefined
         ]),
-        tags ? h(TagList, { class: "mt-2 text-[11px] max-w-[400px]", tags }) : undefined
+        tags.length ? h(TagList, { class: "mt-2 text-[11px] max-w-[400px]", tags }) : undefined
       ])
     }
   },
@@ -278,6 +287,30 @@ const meta: TableMeta<ICard> = {
     }
   }
 }
+
+watch(
+  () => [route.path, route.query.selectId] as const,
+  ([, selectId]) => {
+    table.value?.tableApi?.setRowSelection({})
+    if (!selectId) return
+
+    const trySelect = (attempts = 0) => {
+      selectRow(selectId as string)
+      if (attempts < 10) {
+        setTimeout(() => trySelect(attempts + 1), 50)
+      }
+    }
+
+    trySelect()
+  }
+)
+
+onMounted(() => {
+  const selectId = route.query.selectId
+  if (selectId) {
+    selectRow(selectId as string)
+  }
+})
 </script>
 
 <template>

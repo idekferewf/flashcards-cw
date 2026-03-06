@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import Logo from "@/components/Logo.vue"
 import { ROUTES } from "@/constants"
+import { useCardStore } from "@/store/card.store"
+import { useDeckStore } from "@/store/deck.store"
 import type { CommandPaletteGroup, NavigationMenuItem, ToasterProps } from "@nuxt/ui"
 import { useColorMode } from "@vueuse/core"
 import { computed, ref, watch } from "vue"
+import { useRoute, useRouter } from "vue-router"
 
 const toaster: ToasterProps = { position: "bottom-center" }
 
@@ -12,7 +15,11 @@ const menuItemUI: NavigationMenuItem["ui"] = {
   linkLabel: "ml-1.5 -mb-0.5"
 }
 
+const route = useRoute()
+const router = useRouter()
 const colorMode = useColorMode()
+const cardStore = useCardStore()
+const deckStore = useDeckStore()
 
 const isCollapsed = ref<boolean>(false)
 
@@ -64,6 +71,34 @@ const items: NavigationMenuItem[][] = [
 ]
 
 const groups = computed<CommandPaletteGroup[]>(() => [
+  {
+    id: "main",
+    label: "Основное",
+    items: [
+      {
+        label: "Колоды",
+        icon: "i-lucide-package-2",
+        children: deckStore.decks.map(deck => ({
+          label: deck.name,
+          suffix: deck.description,
+          to: { name: ROUTES.DECKS.children.index.name, params: { deckId: deck.id } },
+          icon: "i-lucide-package",
+          disabled: route.path === ROUTES.DECKS.children.index.fullPath(deck.id)
+        }))
+      },
+      {
+        label: "Карточки",
+        icon: "i-lucide-book-copy",
+        children: cardStore.cards.map(card => ({
+          label: card.front,
+          icon: "i-lucide-book-text",
+          disabled: route.path === ROUTES.DECKS.children.index.fullPath(card.deckId) && route.query.selectId === card.id,
+          onSelect: () =>
+            router.push({ name: ROUTES.DECKS.children.index.name, params: { deckId: card.deckId }, query: { selectId: card.id } })
+        }))
+      }
+    ]
+  },
   {
     id: "theme",
     label: "Тема",
@@ -141,6 +176,8 @@ const groups = computed<CommandPaletteGroup[]>(() => [
         :color-mode="false"
         :groups="groups"
         placeholder="Что вы ищите?"
+        virtualize
+        :fuse="{ resultLimit: 1000 }"
         :ui="{
           input: '[&>input]:placeholder:text-[15px]',
           root: 'h-full divide-none px-1 py-0.5',
