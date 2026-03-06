@@ -161,10 +161,9 @@ const statusOptions: SelectMenuItem[] = [
 
 const columnNames: Record<string, string> = {
   select: "Выбор",
-  id: "ID",
   front: "Вопрос",
   status: "Статус",
-  dueAt: "Дата создания",
+  dueAt: "Дата повторения",
   actions: "Действия"
 } as const
 
@@ -248,7 +247,7 @@ const columns: TableColumn<ICard>[] = [
       })
     },
     cell: ({ row }) => {
-      return formatRelative(new Date(row.original.dueAt as string), new Date(), { locale: ru })
+      return formatRelative(new Date(row.original.dueAt), new Date(), { locale: ru })
     }
   },
   {
@@ -396,7 +395,7 @@ onMounted(() => {
       tbody:
         'mt-10 [&>tr]:last:[&>td]:border-b-0 [&>tr:not(:has(td[data-slot=empty]))]:hover:bg-elevated/35 [&>tr:not(:has(td[data-slot=empty]))]:focus-visible:bg-elevated/35',
       tr: 'cursor-pointer outline-none transition-colors duration-150 data-[selected=true]:hover:bg-elevated/50',
-      th: 'py-4 first:rounded-tl-lg last:rounded-tr-lg border-default border-b',
+      th: 'py-4 first:rounded-tl-lg last:rounded-tr-lg font-semibold border-default border-b',
       td: 'border-b border-default',
       separator: 'h-0',
       empty: 'hover:bg-transparent'

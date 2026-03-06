@@ -30,5 +30,9 @@ export const ROUTES = {
         fullPath: (id: string) => `${DECKS_BASE_PATH}/${id}/create-card`
       }
     }
+  },
+  CARDS: {
+    name: "cards",
+    path: "/cards"
   }
 } as const

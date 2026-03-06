@@ -49,6 +49,7 @@ const items: NavigationMenuItem[][] = [
     {
       label: "Карточки",
       icon: "i-lucide-book",
+      to: ROUTES.CARDS.path,
       ui: menuItemUI
     },
     {

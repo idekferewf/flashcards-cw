@@ -35,6 +35,11 @@ const routes = [
         component: () => import("@/pages/decks/CreateCard.vue")
       }
     ]
+  },
+  {
+    name: ROUTES.CARDS.name,
+    path: ROUTES.CARDS.path,
+    component: () => import("@/pages/Cards.vue")
   }
 ]
 
