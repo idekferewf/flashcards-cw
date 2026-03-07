@@ -12,8 +12,8 @@ defineProps<{
     :to="{ name: ROUTES.INDEX.name }"
     class="text-highlighted font-logo inline-flex items-center gap-2.5 text-lg font-semibold"
   >
-    <img src="/favicon-light.png" type="image/png" alt="flashcards" class="light:hidden w-8" />
-    <img src="/favicon-dark.png" type="image/png" alt="flashcards" class="w-8 dark:hidden" />
-    <span>Flashcards</span>
+    <img src="/favicon-light.png" type="image/png" alt="flashcards" class="light:hidden w-7" />
+    <img src="/favicon-dark.png" type="image/png" alt="flashcards" class="w-7 dark:hidden" />
+    <span>Learnly</span>
   </RouterLink>
 </template>

@@ -2,8 +2,8 @@
 @import "@nuxt/ui";
 
 @theme static {
-  --font-sans: "Roboto", sans-serif;
-  --font-logo: "InterVariable", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-sans: "Lora", serif;
+  --font-logo: "Bitter", serif;
 
   --color-green-50: oklch(90.98% 0.04338 166.72);
   --color-green-100: oklch(88.46% 0.05417 166.29);
