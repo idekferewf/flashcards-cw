@@ -3,7 +3,7 @@ import { useLeaveConfirm } from "@/composables/use-leave-confirm.composable"
 
 const open = defineModel<boolean>("open", { default: false })
 
-const { isOpen: isConfirmOpen, onConfirm, onCancel, confirm } = useLeaveConfirm(() => true)
+const { isOpen: isConfirmOpen, onConfirm, onCancel, confirm } = useLeaveConfirm(() => open.value)
 
 const onUpdateOpen = (value: boolean) => {
   if (!value) {
