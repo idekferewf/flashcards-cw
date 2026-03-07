@@ -1,7 +1,19 @@
 <script setup lang="ts">
-defineProps<{
-  open: boolean
-}>()
+withDefaults(
+  defineProps<{
+    open: boolean
+    title?: string
+    description?: string
+    confirmLabel?: string
+    cancelLabel?: string
+  }>(),
+  {
+    title: "Покинуть страницу?",
+    description: "Заполненные данные не будут сохранены.",
+    confirmLabel: "Покинуть",
+    cancelLabel: "Остаться"
+  }
+)
 
 const emit = defineEmits<{
   confirm: []
@@ -13,21 +25,21 @@ const emit = defineEmits<{
   <UModal
     :open="open"
     :close="false"
-    title="Покинуть страницу?"
-    description="Заполненные данные не будут сохранены."
+    :title="title"
+    :description="description"
     :dismissible="false"
     :ui="{ footer: 'justify-end pt-0', content: 'max-w-[450px] divide-none' }"
   >
     <template #footer>
       <UButton
         autofocus
-        label="Остаться"
+        :label="cancelLabel"
         color="neutral"
         variant="outline"
         class="focus:ring-inverted focus:ring-2"
         @click="emit('cancel')"
       />
-      <UButton label="Покинуть" color="error" variant="solid" @click="emit('confirm')" />
+      <UButton :label="confirmLabel" color="error" variant="solid" @click="emit('confirm')" />
     </template>
   </UModal>
 </template>

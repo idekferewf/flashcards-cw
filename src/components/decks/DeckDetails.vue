@@ -20,7 +20,8 @@ const route = useRoute()
 const deckStore = useDeckStore()
 const tagStore = useTagStore()
 
-const isEditModalOpen = ref<boolean>(false)
+const editModalOpen = ref<boolean>(false)
+const repetitionModalOpen = ref<boolean>(false)
 const deckToDelete = ref<IDeck | null>(null)
 
 const tags = computed<ITag[]>(() => tagStore.getTagsByDeckOrCard(props.deck))
@@ -52,7 +53,23 @@ const openDeleteModal = () => {
   deckToDelete.value = props.deck
 }
 
+const openEditModal = () => {
+  editModalOpen.value = true
+}
+
+const openRepetitionModal = () => {
+  repetitionModalOpen.value = true
+}
+
 const dropdownItems: DropdownMenuItem[] = [
+  {
+    label: "Редактировать",
+    icon: "i-lucide-square-pen",
+    kbds: ["ctrl", "e"],
+    onSelect: () => {
+      openEditModal()
+    }
+  },
   {
     label: "Удалить",
     icon: "i-lucide-trash",
@@ -101,7 +118,7 @@ defineShortcuts({
   ctrl_e: {
     handler: () => {
       if (isOverlayOpen()) return
-      isEditModalOpen.value = !isEditModalOpen.value
+      openEditModal()
     },
     usingInput: true
   },
@@ -138,12 +155,10 @@ defineShortcuts({
 
         <!-- Right actions -->
         <template #right>
-          <DeckEditModal v-model:open="isEditModalOpen" :deck>
-            <UButton icon="i-lucide-square-pen" color="neutral" variant="ghost">
-              Редактировать
-              <UKbd>ctrl + e</UKbd>
-            </UButton>
-          </DeckEditModal>
+          <UButton :to="{ name: ROUTES.DECKS.children.createCard.name }" icon="i-lucide-plus" color="neutral" variant="ghost">
+            Добавить карточку
+            <UKbd>alt + n</UKbd>
+          </UButton>
 
           <!-- Archive -->
           <UTooltip text="Архивировать">
@@ -174,17 +189,9 @@ defineShortcuts({
 
           <USeparator orientation="vertical" class="h-4 px-2" />
 
-          <!-- Create Card -->
-          <UTooltip text="Добавить карточку" :kbds="['alt', 'n']">
-            <UButton
-              :to="{ name: ROUTES.DECKS.children.createCard.name }"
-              color="neutral"
-              square
-              icon="i-lucide-plus"
-              class="rounded-full"
-            />
+          <UTooltip text="Начать повторение">
+            <UButton color="neutral" icon="i-lucide-repeat" @click="openRepetitionModal" />
           </UTooltip>
-          <!-- /Create Card -->
         </template>
         <!-- /Right actions -->
       </UDashboardNavbar>
@@ -199,9 +206,9 @@ defineShortcuts({
         <component :is="Component" :deck="deck" />
       </RouterView>
 
-      <!-- Delete modal -->
       <DeckDeleteModal v-model:deck="deckToDelete" />
-      <!-- /Delete modal -->
+      <DeckEditModal v-model:open="editModalOpen" :deck />
+      <RepetitionModal v-model:open="repetitionModalOpen" />
     </template>
   </UDashboardPanel>
 </template>

@@ -33,5 +33,10 @@ export const useLeaveConfirm = (isDirty: () => boolean) => {
   onMounted(() => window.addEventListener("beforeunload", onBeforeUnload))
   onUnmounted(() => window.removeEventListener("beforeunload", onBeforeUnload))
 
-  return { isOpen, onConfirm, onCancel }
+  return {
+    isOpen,
+    onConfirm,
+    onCancel,
+    confirm
+  }
 }
