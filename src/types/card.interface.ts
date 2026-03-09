@@ -5,14 +5,14 @@ export const CardStatus = {
   relearning: "relearning"
 } as const
 
-export const CardStatusLabels: Record<CardStatus, string> = {
+export const CardStatusLabels: Record<TCardStatus, string> = {
   new: "Новая",
   learning: "Изучается",
   review: "На повторении",
   relearning: "Переучивание"
 } as const
 
-export type CardStatus = (typeof CardStatus)[keyof typeof CardStatus]
+export type TCardStatus = (typeof CardStatus)[keyof typeof CardStatus]
 
 export interface ICard {
   id: string
@@ -22,15 +22,14 @@ export interface ICard {
   tagIds: string[]
   isPinned?: boolean
 
-  status?: CardStatus
+  status?: TCardStatus
   learningStepsCompleted?: number
-
   interval?: number
   easeFactor?: number
   repetitions?: number
   lapses?: number
-
   dueAt: string
+
   createdAt: string
   updatedAt?: string
 }

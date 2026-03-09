@@ -96,7 +96,8 @@ const toolbarLinks = computed<NavigationMenuItem[]>(() => [
   {
     label: "Настройки",
     icon: "i-lucide-settings",
-    to: ROUTES.DECKS.children.settings.fullPath(props.deck?.id ?? "")
+    to: ROUTES.DECKS.children.settings.fullPath(props.deck?.id ?? ""),
+    disabled: true
   },
   ...(route.name === ROUTES.DECKS.children.createCard.name
     ? [
@@ -148,8 +149,12 @@ defineShortcuts({
         </template>
         <template #title>
           <h1>{{ deck.name }}</h1>
-          <TagList v-if="tags.length" :tags="tags.slice(0, 4)" class="ml-1.5 !flex-nowrap !gap-1.5 truncate text-[11px]" />
-          <span v-if="tags.length > 4" class="text-toned ml-0.5">...</span>
+          <TagList
+            v-if="tags.length"
+            :tags="tags.slice(0, 4)"
+            class="ml-1.5 translate-y-px !flex-nowrap !gap-1.5 truncate text-[11px]"
+          />
+          <UIcon v-if="tags.length > 4" name="i-lucide-ellipsis" class="text-toned ml-0.5 translate-y-0.5" />
         </template>
         <!-- /Name -->
 

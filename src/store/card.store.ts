@@ -1,6 +1,6 @@
 import { CardsTD } from "@/store/temp-data.ts"
 import { CardStatus, type ICard, type TCardCreateDTO, type TCardUpdateDTO } from "@/types"
-import { type StorageLikeAsync, useStorageAsync } from "@vueuse/core"
+import { useStorageAsync, type StorageLikeAsync } from "@vueuse/core"
 import localforage from "localforage"
 import { defineStore } from "pinia"
 import { ref } from "vue"

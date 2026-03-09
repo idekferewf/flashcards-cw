@@ -2,7 +2,7 @@
 import { ROUTES } from "@/constants"
 import { useCardStore } from "@/store/card.store"
 import { useTagStore } from "@/store/tag.store"
-import { CardStatus, CardStatusLabels, type ICard, type IDeck } from "@/types"
+import { CardStatus, CardStatusLabels, type ICard, type IDeck, type TCardStatus } from "@/types"
 import type { SelectMenuItem, TableColumn } from "@nuxt/ui"
 import { useToast } from "@nuxt/ui/composables"
 import {
@@ -219,12 +219,12 @@ const columns: TableColumn<ICard>[] = [
         learning: "warning" as const,
         review: "neutral" as const,
         relearning: "error" as const
-      }[row.original.status as CardStatus]
+      }[row.original.status as TCardStatus]
 
       return h(
         UBadge,
         { class: "capitalize", variant: "subtle", color },
-        () => CardStatusLabels[row.original.status as CardStatus]
+        () => CardStatusLabels[row.original.status as TCardStatus]
       )
     }
   },

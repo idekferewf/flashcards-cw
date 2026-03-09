@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useCardStore } from "@/store/card.store"
 import { useTagStore } from "@/store/tag.store"
-import { CardStatus, CardStatusLabels, type ICard } from "@/types"
+import { CardStatus, CardStatusLabels, type ICard, type TCardStatus } from "@/types"
 import { pluralize } from "@/utils"
 import type { SelectMenuItem, TableColumn } from "@nuxt/ui"
 import {
@@ -128,12 +128,12 @@ const columns: TableColumn<ICard>[] = [
         learning: "warning" as const,
         review: "neutral" as const,
         relearning: "error" as const
-      }[row.original.status as CardStatus]
+      }[row.original.status as TCardStatus]
 
       return h(
         UBadge,
         { class: "capitalize", variant: "subtle", color },
-        () => CardStatusLabels[row.original.status as CardStatus]
+        () => CardStatusLabels[row.original.status as TCardStatus]
       )
     }
   },
