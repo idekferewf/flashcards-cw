@@ -1,44 +1,20 @@
 <script setup lang="ts">
 import { ROUTES } from "@/constants"
-import type { IDeck } from "@/types"
+import { useDeckStore } from "@/store/deck.store"
+import type { IDeck, TDeckUpdateDTO } from "@/types"
 import type { TabsItem } from "@nuxt/ui"
-import { createRule, useRegle } from "@regle/core"
+import { useRegle, type Maybe } from "@regle/core"
 import { integer, maxValue, minValue, required, withMessage } from "@regle/rules"
-import { reactive } from "vue"
+import { computed } from "vue"
 
 const props = defineProps<{
   deck: IDeck
 }>()
 
-const state = reactive({
-  learningSteps: [...props.deck.config.learningSteps],
-  relearningSteps: [...props.deck.config.relearningSteps],
-  graduatingInterval: props.deck.config.graduatingInterval,
-  easyInterval: props.deck.config.easyInterval,
-  startingEase: props.deck.config.startingEase,
-  easyBonus: props.deck.config.easyBonus,
-  hardInterval: props.deck.config.hardInterval,
-  intervalModifier: props.deck.config.intervalModifier,
-  newInterval: props.deck.config.newInterval,
-  minimumInterval: props.deck.config.minimumInterval,
-  maximumInterval: props.deck.config.maximumInterval
-})
+const toast = useToast()
+const deckStore = useDeckStore()
 
-const minEasyRule = createRule({
-  validator() {
-    return state.easyInterval >= state.graduatingInterval
-  },
-  message: "Интервал не может быть меньше интервала выпуска."
-})
-
-const minMaxRule = createRule({
-  validator() {
-    return state.maximumInterval >= state.minimumInterval
-  },
-  message: "Интервал не может быть меньше минимального."
-})
-
-function validSteps(value: unknown) {
+const validSteps = (value: Maybe<number[]>) => {
   if (!Array.isArray(value) || !value.length) return false
   return value.every(s => {
     const n = Number(s)
@@ -46,64 +22,128 @@ function validSteps(value: unknown) {
   })
 }
 
-const { r$ } = useRegle(state, {
-  learningSteps: {
-    required: withMessage(required, "Добавьте хотя бы один шаг обучения."),
-    validSteps: withMessage(validSteps, "Шаги должны быть целыми числами (например: 1, 10).")
+const { r$ } = useRegle(
+  {
+    learningSteps: [...props.deck.config.learningSteps],
+    relearningSteps: [...props.deck.config.relearningSteps],
+    graduatingInterval: props.deck.config.graduatingInterval,
+    easyInterval: props.deck.config.easyInterval,
+    startingEase: props.deck.config.startingEase,
+    easyBonus: props.deck.config.easyBonus,
+    hardInterval: props.deck.config.hardInterval,
+    intervalModifier: props.deck.config.intervalModifier,
+    newInterval: props.deck.config.newInterval,
+    minimumInterval: props.deck.config.minimumInterval,
+    maximumInterval: props.deck.config.maximumInterval
   },
-  relearningSteps: {
-    required: withMessage(required, "Укажите хотя бы один шаг переобучения."),
-    validSteps: withMessage(validSteps, "Шаги должны быть целыми числами (например: 10, 20).")
-  },
-  graduatingInterval: {
-    required: withMessage(required, "Данное поле обязательно для заполнения."),
-    integer: withMessage(integer, "Интервал должен быть целым числом."),
-    minValue: withMessage(minValue(1), "Минимальное значение – 1.")
-  },
-  easyInterval: {
-    required: withMessage(required, "Данное поле обязательно для заполнения."),
-    integer: withMessage(integer, "Интервал должен быть целым числом."),
-    minValue: withMessage(minValue(1), "Минимальное значение – 1."),
-    minEasy: minEasyRule
-  },
-  startingEase: {
-    required: withMessage(required, "Данное поле обязательно для заполнения."),
-    integer: withMessage(integer, "Значение должно быть целым числом."),
-    minValue: withMessage(minValue(130), "Минимальное значение – 130%."),
-    maxValue: withMessage(maxValue(450), "Максимальное значение – 450%.")
-  },
-  easyBonus: {
-    required: withMessage(required, "Данное поле обязательно для заполнения."),
-    minValue: withMessage(minValue(1), "Минимальное значение – 1,0."),
-    maxValue: withMessage(maxValue(5), "Максимальное значение – 5,0.")
-  },
-  hardInterval: {
-    required: withMessage(required, "Данное поле обязательно для заполнения."),
-    minValue: withMessage(minValue(1), "Минимальное значение – 1,0."),
-    maxValue: withMessage(maxValue(1.5), "Максимальное значение – 1,5.")
-  },
-  intervalModifier: {
-    required: withMessage(required, "Данное поле обязательно для заполнения."),
-    minValue: withMessage(minValue(0.1), "Минимальное значение – 0,1."),
-    maxValue: withMessage(maxValue(5), "Максимальное значение – 5,0.")
-  },
-  newInterval: {
-    required: withMessage(required, "Данное поле обязательно для заполнения."),
-    minValue: withMessage(minValue(0), "Минимальное значение – 0,0 (полный сброс)."),
-    maxValue: withMessage(maxValue(1), "Максимальное значение – 1,0. (без изменений).")
-  },
-  minimumInterval: {
-    required: withMessage(required, "Данное поле обязательно для заполнения."),
-    integer: withMessage(integer, "Интервал должен быть целым числом."),
-    minValue: withMessage(minValue(1), "Минимальное значение – 1.")
-  },
-  maximumInterval: {
-    required: withMessage(required, "Данное поле обязательно для заполнения."),
-    integer: withMessage(integer, "Интервал должен быть целым числом."),
-    minValue: withMessage(minValue(1), "Минимальное значение – 1."),
-    minMax: minMaxRule
+  {
+    learningSteps: {
+      required: withMessage(required, "Добавьте хотя бы один шаг обучения."),
+      validSteps: withMessage(validSteps, "Шаги должны быть целыми числами (например: 1, 10).")
+    },
+    relearningSteps: {
+      required: withMessage(required, "Укажите хотя бы один шаг переобучения."),
+      validSteps: withMessage(validSteps, "Шаги должны быть целыми числами (например: 10, 20).")
+    },
+    graduatingInterval: {
+      required: withMessage(required, "Данное поле обязательно для заполнения."),
+      integer: withMessage(integer, "Интервал должен быть целым числом."),
+      minValue: withMessage(minValue(1), "Минимальное значение – 1."),
+      maxGraduating: withMessage(
+        (value: Maybe<number>): boolean => (value ?? 0) < r$.$value.easyInterval,
+        "Интервал выпуска не может быть больше или равен интервалу «Легко»."
+      )
+    },
+    easyInterval: {
+      required: withMessage(required, "Данное поле обязательно для заполнения."),
+      integer: withMessage(integer, "Интервал должен быть целым числом."),
+      minValue: withMessage(minValue(1), "Минимальное значение – 1."),
+      minEasy: withMessage(
+        (value: Maybe<number>): boolean => (value ?? 0) >= r$.$value.graduatingInterval,
+        "Интервал не может быть меньше интервала выпуска."
+      )
+    },
+    startingEase: {
+      required: withMessage(required, "Данное поле обязательно для заполнения."),
+      integer: withMessage(integer, "Значение должно быть целым числом."),
+      minValue: withMessage(minValue(130), "Минимальное значение – 130%."),
+      maxValue: withMessage(maxValue(450), "Максимальное значение – 450%.")
+    },
+    easyBonus: {
+      required: withMessage(required, "Данное поле обязательно для заполнения."),
+      minValue: withMessage(minValue(1), "Минимальное значение – 1,0."),
+      maxValue: withMessage(maxValue(5), "Максимальное значение – 5,0.")
+    },
+    hardInterval: {
+      required: withMessage(required, "Данное поле обязательно для заполнения."),
+      minValue: withMessage(minValue(1), "Минимальное значение – 1,0."),
+      maxValue: withMessage(maxValue(1.5), "Максимальное значение – 1,5.")
+    },
+    intervalModifier: {
+      required: withMessage(required, "Данное поле обязательно для заполнения."),
+      minValue: withMessage(minValue(0.1), "Минимальное значение – 0,1."),
+      maxValue: withMessage(maxValue(5), "Максимальное значение – 5,0.")
+    },
+    newInterval: {
+      required: withMessage(required, "Данное поле обязательно для заполнения."),
+      minValue: withMessage(minValue(0), "Минимальное значение – 0,0 (полный сброс)."),
+      maxValue: withMessage(maxValue(1), "Максимальное значение – 1,0. (без изменений).")
+    },
+    minimumInterval: {
+      required: withMessage(required, "Данное поле обязательно для заполнения."),
+      integer: withMessage(integer, "Интервал должен быть целым числом."),
+      minValue: withMessage(minValue(1), "Минимальное значение – 1."),
+      maxMin: withMessage(
+        (value: Maybe<number>): boolean => (value ?? 0) < r$.$value.maximumInterval,
+        "Интервал не может быть больше максимального."
+      )
+    },
+    maximumInterval: {
+      required: withMessage(required, "Данное поле обязательно для заполнения."),
+      integer: withMessage(integer, "Интервал должен быть целым числом."),
+      minValue: withMessage(minValue(1), "Минимальное значение – 1."),
+      minMax: withMessage(
+        (value: Maybe<number>): boolean => (value ?? 0) >= r$.$value.minimumInterval,
+        "Интервал не может быть меньше минимального."
+      )
+    }
   }
+)
+
+const hasChanges = computed<boolean>(() => {
+  const c = props.deck.config
+  const v = r$.$value
+
+  const stepsChanged = (a: unknown[], b: number[]) => a.length !== b.length || a.some((s, i) => Number(s) !== b[i])
+
+  return (
+    stepsChanged(v.learningSteps, c.learningSteps) ||
+    stepsChanged(v.relearningSteps, c.relearningSteps) ||
+    v.graduatingInterval !== c.graduatingInterval ||
+    v.easyInterval !== c.easyInterval ||
+    v.startingEase !== c.startingEase ||
+    v.easyBonus !== c.easyBonus ||
+    v.hardInterval !== c.hardInterval ||
+    v.intervalModifier !== c.intervalModifier ||
+    v.newInterval !== c.newInterval ||
+    v.minimumInterval !== c.minimumInterval ||
+    v.maximumInterval !== c.maximumInterval
+  )
 })
+
+const onSubmit = async () => {
+  const { valid, data } = await r$.$validate()
+  if (!valid) return
+
+  const deckUpdateDTO: TDeckUpdateDTO = { config: { ...data } }
+  deckStore.updateDeck(props.deck.id, deckUpdateDTO)
+
+  toast.add({
+    title: "Настройки успешно сохранены",
+    icon: "i-lucide-circle-check",
+    color: "success"
+  })
+}
 
 const items: TabsItem[] = [
   {
@@ -126,7 +166,7 @@ const items: TabsItem[] = [
 </script>
 
 <template>
-  <UForm :schema="r$" :state="r$.$value">
+  <UForm :schema="r$" :state="r$.$value" @submit="onSubmit">
     <UTabs
       :items="items"
       class="w-full"
@@ -153,7 +193,7 @@ const items: TabsItem[] = [
           class="mt-8"
         >
           <UInputTags
-            v-model="r$.learningSteps.$value"
+            v-model="r$.$value.learningSteps"
             duplicate
             placeholder="Добавить шаг..."
             delete-icon="i-lucide-trash"
@@ -168,7 +208,7 @@ const items: TabsItem[] = [
           help="Первый интервал повторения после завершения изучения."
           class="mt-6"
         >
-          <UInput v-model.number="state.graduatingInterval" type="number" placeholder="1" class="w-full" />
+          <UInputNumber v-model="r$.$value.graduatingInterval" :min="1" :step="1" placeholder="1" class="w-full" />
         </UFormField>
 
         <UFormField
@@ -178,7 +218,7 @@ const items: TabsItem[] = [
           help="Интервал при ответе «Легко» на этапе изучения."
           class="mt-6"
         >
-          <UInput v-model.number="state.easyInterval" type="number" placeholder="4" class="w-full" />
+          <UInputNumber v-model="r$.$value.easyInterval" :min="1" :step="1" placeholder="4" class="w-full" />
         </UFormField>
       </template>
       <!-- /Learning -->
@@ -197,7 +237,7 @@ const items: TabsItem[] = [
           class="mt-8"
         >
           <UInputTags
-            v-model="r$.relearningSteps.$value"
+            v-model="r$.$value.relearningSteps"
             duplicate
             placeholder="Добавить шаг..."
             delete-icon="i-lucide-trash"
@@ -213,7 +253,7 @@ const items: TabsItem[] = [
           class="mt-6"
         >
           <UInputNumber
-            v-model="state.newInterval"
+            v-model="r$.$value.newInterval"
             :min="0"
             :max="1"
             :step="0.05"
@@ -233,7 +273,7 @@ const items: TabsItem[] = [
           help="Минимальный интервал после выхода из переобучения."
           class="mt-6"
         >
-          <UInput v-model.number="state.minimumInterval" type="number" placeholder="1" class="w-full" />
+          <UInputNumber v-model="r$.$value.minimumInterval" :min="1" :step="1" placeholder="1" class="w-full" />
         </UFormField>
       </template>
       <!-- /Lapses -->
@@ -251,7 +291,7 @@ const items: TabsItem[] = [
           help="Начальный множитель, применяемый к новым карточкам."
           class="mt-8"
         >
-          <UInputNumber v-model="state.startingEase" :min="0" :max="450" :step="5" placeholder="250" class="w-full" />
+          <UInputNumber v-model="r$.$value.startingEase" :min="130" :max="450" :step="5" placeholder="250" class="w-full" />
         </UFormField>
 
         <UFormField
@@ -262,7 +302,7 @@ const items: TabsItem[] = [
           class="mt-6"
         >
           <UInputNumber
-            v-model="state.easyBonus"
+            v-model="r$.$value.easyBonus"
             :min="1.0"
             :max="5.0"
             :step="0.1"
@@ -283,7 +323,7 @@ const items: TabsItem[] = [
           class="mt-6"
         >
           <UInputNumber
-            v-model="state.hardInterval"
+            v-model="r$.$value.hardInterval"
             :min="1"
             :max="1.5"
             :step="0.05"
@@ -298,6 +338,7 @@ const items: TabsItem[] = [
       </template>
       <!-- /Ease Factor -->
 
+      <!-- Intervals -->
       <template #intervals>
         <h2 class="text-default text-base font-medium">Интервалы</h2>
         <p class="text-muted mt-0.5 text-[13px]">Параметры, влияющие на итоговые интервалы повторений.</p>
@@ -311,7 +352,7 @@ const items: TabsItem[] = [
           class="mt-8"
         >
           <UInputNumber
-            v-model="state.intervalModifier"
+            v-model="r$.$value.intervalModifier"
             :min="0.1"
             :max="5"
             :step="0.1"
@@ -333,16 +374,16 @@ const items: TabsItem[] = [
         >
           <div class="flex items-center gap-5">
             <USlider
-              v-model="state.maximumInterval"
+              v-model="r$.$value.maximumInterval"
               size="sm"
               :min="1"
               :max="36500"
               :step="10"
-              :tooltip="{ text: `${state.maximumInterval} дн.` }"
+              :tooltip="{ text: `${r$.$value.maximumInterval} дн.` }"
               class="mt-3.5 mb-2.5 w-full"
             />
             <UInput
-              v-model.number="state.maximumInterval"
+              v-model.number="r$.$value.maximumInterval"
               type="number"
               placeholder="36500"
               max="36500"
@@ -358,6 +399,7 @@ const items: TabsItem[] = [
           </div>
         </UFormField>
       </template>
+      <!-- /Intervals -->
     </UTabs>
   </UForm>
 
@@ -373,7 +415,7 @@ const items: TabsItem[] = [
       color="neutral"
       variant="outline"
     />
-    <UButton size="lg" label="Сохранить" color="neutral" :disabled="!r$.$correct" />
+    <UButton size="lg" label="Сохранить" color="neutral" :disabled="!hasChanges || !r$.$correct" @click="onSubmit" />
   </div>
   <!-- /Footer -->
 </template>
