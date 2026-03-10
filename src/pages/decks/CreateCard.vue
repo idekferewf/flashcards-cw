@@ -64,11 +64,10 @@ const close = () => {
 
 <template>
   <UForm :schema="r$" :state="r$.$value" class="relative mx-auto h-full w-full px-3.5" @submit="onSubmit">
-    <!-- Header -->
-    <h1 class="text-base font-medium">Создание карточки</h1>
-    <p class="text-muted mt-0.5 text-[13px]">Заполните поля ниже, чтобы добавить карточку.</p>
-    <!-- /Header -->
-
+    <p class="text-default block text-base font-medium">
+      <UIcon name="i-lucide-notebook-text" class="mr-1 inline-block size-5" />
+      Основное
+    </p>
     <USeparator class="-mx-20 w-auto py-4 sm:py-6" />
 
     <!-- Front -->
@@ -119,6 +118,7 @@ const close = () => {
       <UIcon name="i-lucide-settings-2" class="mr-1 inline-block size-5" />
       Дополнительно
     </p>
+    <USeparator class="-mx-20 w-auto py-4 sm:py-6" />
 
     <!-- Tags -->
     <CreateTagForm

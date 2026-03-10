@@ -96,8 +96,7 @@ const toolbarLinks = computed<NavigationMenuItem[]>(() => [
   {
     label: "Настройки",
     icon: "i-lucide-settings",
-    to: ROUTES.DECKS.children.settings.fullPath(props.deck?.id ?? ""),
-    disabled: true
+    to: ROUTES.DECKS.children.settings.fullPath(props.deck?.id ?? "")
   },
   ...(route.name === ROUTES.DECKS.children.createCard.name
     ? [
