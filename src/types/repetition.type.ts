@@ -9,6 +9,8 @@ export const Rating = {
 
 export type TRating = (typeof Rating)[keyof typeof Rating]
 
+export type TRatingPreview = Record<TRating, string>
+
 export type TRepetitionResult = Pick<
   ICard,
   "status" | "learningStepsCompleted" | "interval" | "easeFactor" | "repetitions" | "lapses" | "dueAt"

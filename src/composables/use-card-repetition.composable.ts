@@ -1,18 +1,13 @@
-import { CardStatus, type ICard, type IRepetitionConfig, Rating, type TRating, type TRepetitionResult } from "@/types"
-
-function addDays(date: Date, days: number): Date {
-  const result = new Date(date)
-  result.setDate(result.getDate() + days)
-  return result
-}
-
-function addMinutes(date: Date, minutes: number): Date {
-  return new Date(date.getTime() + minutes * 60 * 1000)
-}
-
-function getStep(steps: number[], index: number): number {
-  return steps[Math.min(index, steps.length - 1)] ?? steps[0] ?? 1
-}
+import {
+  CardStatus,
+  type ICard,
+  type IRepetitionConfig,
+  Rating,
+  type TRating,
+  type TRatingPreview,
+  type TRepetitionResult
+} from "@/types"
+import { addDays, addMinutes, calculateOverdueBonus, clampInterval, formatDelay, getStep } from "@/utils/repetition.util"
 
 function graduate(card: ICard, isEasy: boolean, config: IRepetitionConfig, now: Date): TRepetitionResult {
   const interval = isEasy ? config.easyInterval : config.graduatingInterval
@@ -96,22 +91,192 @@ function scheduleLearning(card: ICard, rating: TRating, config: IRepetitionConfi
   }
 }
 
+function scheduleReview(card: ICard, rating: TRating, config: IRepetitionConfig, now: Date): TRepetitionResult {
+  const interval = card.interval ?? 1
+  const easeFactor = card.easeFactor ?? config.startingEase
+  const repetitions = (card.repetitions ?? 0) + 1
+  const lapses = card.lapses ?? 0
+  const overdue = calculateOverdueBonus(card, now)
+
+  switch (rating) {
+    case Rating.again: {
+      const newEase = Math.max(130, easeFactor - 20)
+      const newInterval = Math.max(config.minimumInterval, Math.round(interval * config.newInterval))
+      const steps = config.relearningSteps
+
+      return {
+        status: CardStatus.relearning,
+        learningStepsCompleted: 0,
+        interval: newInterval,
+        easeFactor: newEase,
+        repetitions,
+        lapses: lapses + 1,
+        dueAt:
+          steps.length > 0 ? addMinutes(now, getStep(steps, 0)).toISOString() : addDays(now, config.minimumInterval).toISOString()
+      }
+    }
+
+    case Rating.hard: {
+      const newEase = Math.max(130, easeFactor - 15)
+      const newInterval = clampInterval(
+        Math.round((interval + overdue / 4) * config.hardInterval * config.intervalModifier),
+        interval,
+        config.maximumInterval
+      )
+
+      return {
+        status: CardStatus.review,
+        learningStepsCompleted: 0,
+        interval: newInterval,
+        easeFactor: newEase,
+        repetitions,
+        lapses,
+        dueAt: addDays(now, newInterval).toISOString()
+      }
+    }
+
+    case Rating.good: {
+      const newInterval = clampInterval(
+        Math.round((interval + overdue / 2) * (easeFactor / 100) * config.intervalModifier),
+        interval,
+        config.maximumInterval
+      )
+
+      return {
+        status: CardStatus.review,
+        learningStepsCompleted: 0,
+        interval: newInterval,
+        easeFactor,
+        repetitions,
+        lapses,
+        dueAt: addDays(now, newInterval).toISOString()
+      }
+    }
+
+    case Rating.easy: {
+      const newEase = easeFactor + 15
+      const newInterval = clampInterval(
+        Math.round((interval + overdue) * (easeFactor / 100) * config.easyBonus * config.intervalModifier),
+        interval,
+        config.maximumInterval
+      )
+
+      return {
+        status: CardStatus.review,
+        learningStepsCompleted: 0,
+        interval: newInterval,
+        easeFactor: newEase,
+        repetitions,
+        lapses,
+        dueAt: addDays(now, newInterval).toISOString()
+      }
+    }
+  }
+}
+
+function scheduleRelearning(card: ICard, rating: TRating, config: IRepetitionConfig, now: Date): TRepetitionResult {
+  const steps = config.relearningSteps
+  const currentStep = card.learningStepsCompleted ?? 0
+  const easeFactor = card.easeFactor ?? config.startingEase
+  const repetitions = card.repetitions ?? 0
+  const lapses = card.lapses ?? 0
+  const savedInterval = card.interval ?? 1
+
+  switch (rating) {
+    case Rating.again: {
+      return {
+        status: CardStatus.relearning,
+        learningStepsCompleted: 0,
+        interval: savedInterval,
+        easeFactor,
+        repetitions,
+        lapses,
+        dueAt:
+          steps.length > 0 ? addMinutes(now, getStep(steps, 0)).toISOString() : addDays(now, config.minimumInterval).toISOString()
+      }
+    }
+
+    case Rating.hard: {
+      const delayMinutes = getStep(steps, currentStep)
+
+      return {
+        status: CardStatus.relearning,
+        learningStepsCompleted: currentStep,
+        interval: savedInterval,
+        easeFactor,
+        repetitions,
+        lapses,
+        dueAt: addMinutes(now, delayMinutes).toISOString()
+      }
+    }
+
+    case Rating.good: {
+      const nextStep = currentStep + 1
+      if (nextStep >= steps.length) {
+        const newInterval = Math.max(config.minimumInterval, savedInterval)
+        return {
+          status: CardStatus.review,
+          learningStepsCompleted: 0,
+          interval: newInterval,
+          easeFactor,
+          repetitions: repetitions + 1,
+          lapses,
+          dueAt: addDays(now, newInterval).toISOString()
+        }
+      }
+
+      return {
+        status: CardStatus.relearning,
+        learningStepsCompleted: nextStep,
+        interval: savedInterval,
+        easeFactor,
+        repetitions,
+        lapses,
+        dueAt: addMinutes(now, getStep(steps, nextStep)).toISOString()
+      }
+    }
+
+    case Rating.easy: {
+      const newInterval = Math.max(config.minimumInterval, Math.round(savedInterval * config.easyBonus))
+      return {
+        status: CardStatus.review,
+        learningStepsCompleted: 0,
+        interval: newInterval,
+        easeFactor,
+        repetitions: repetitions + 1,
+        lapses,
+        dueAt: addDays(now, newInterval).toISOString()
+      }
+    }
+  }
+}
+
 export function useCardRepetition(config: IRepetitionConfig) {
   function calculate(card: ICard, rating: TRating, now: Date = new Date()): TRepetitionResult {
-    const status = card.status
+    const status = card.status ?? CardStatus.new
 
     if (status === CardStatus.new || status === CardStatus.learning) {
       return scheduleLearning(card, rating, config, now)
     }
 
     if (status === CardStatus.relearning) {
-      // return scheduleRelearning(card, rating, config, now)
-      return {} as TRepetitionResult
+      return scheduleRelearning(card, rating, config, now)
     }
 
-    // return scheduleReview(card, rating, config, now)
-    return {} as TRepetitionResult
+    return scheduleReview(card, rating, config, now)
   }
 
-  return { calculate }
+  function preview(card: ICard, now: Date = new Date()): TRatingPreview {
+    const ratings: TRating[] = [Rating.again, Rating.hard, Rating.good, Rating.easy]
+
+    return Object.fromEntries(
+      ratings.map(rating => {
+        const result = calculate(card, rating, now)
+        const diffMinutes = (new Date(result.dueAt).getTime() - now.getTime()) / 60000
+        return [rating, formatDelay(diffMinutes)]
+      })
+    ) as TRatingPreview
+  }
+
+  return { calculate, preview }
 }

@@ -1,3 +1,4 @@
+import { DEFAULT_REPETITION_CONFIG } from "@/constants"
 import { CardStatus, type ICard, type IDeck, type ITag } from "@/types"
 
 export const TagsTD: ITag[] = [
@@ -22,6 +23,7 @@ export const DecksTD: IDeck[] = [
     updatedAt: "2024-01-10T09:20:00Z",
     isArchived: false,
     isFavorite: false,
+    config: DEFAULT_REPETITION_CONFIG,
     tagIds: []
   },
   {
@@ -32,6 +34,7 @@ export const DecksTD: IDeck[] = [
     updatedAt: "2024-01-12T08:30:00Z",
     isArchived: false,
     isFavorite: false,
+    config: DEFAULT_REPETITION_CONFIG,
     tagIds: ["1", "2", "3", "4", "5"]
   },
   {
@@ -42,6 +45,7 @@ export const DecksTD: IDeck[] = [
     updatedAt: "2024-01-15T16:10:00Z",
     isArchived: false,
     isFavorite: true,
+    config: DEFAULT_REPETITION_CONFIG,
     tagIds: ["5", "6"]
   },
   {
@@ -52,6 +56,7 @@ export const DecksTD: IDeck[] = [
     updatedAt: "2024-01-18T13:40:00Z",
     isArchived: false,
     isFavorite: false,
+    config: DEFAULT_REPETITION_CONFIG,
     tagIds: ["7"]
   },
   {
@@ -62,6 +67,7 @@ export const DecksTD: IDeck[] = [
     updatedAt: "2024-01-20T17:00:00Z",
     isArchived: false,
     isFavorite: false,
+    config: DEFAULT_REPETITION_CONFIG,
     tagIds: ["8"]
   },
   {
@@ -71,6 +77,7 @@ export const DecksTD: IDeck[] = [
     updatedAt: "2024-01-18T08:20:00Z",
     isArchived: false,
     isFavorite: false,
+    config: DEFAULT_REPETITION_CONFIG,
     tagIds: ["9"]
   },
   {
@@ -81,6 +88,7 @@ export const DecksTD: IDeck[] = [
     updatedAt: "2024-01-22T11:45:00Z",
     isArchived: false,
     isFavorite: false,
+    config: DEFAULT_REPETITION_CONFIG,
     tagIds: []
   },
   {
@@ -91,6 +99,7 @@ export const DecksTD: IDeck[] = [
     updatedAt: "2024-01-25T14:00:00Z",
     isArchived: false,
     isFavorite: false,
+    config: DEFAULT_REPETITION_CONFIG,
     tagIds: []
   },
   {
@@ -100,6 +109,7 @@ export const DecksTD: IDeck[] = [
     updatedAt: "2024-01-25T15:30:00Z",
     isArchived: false,
     isFavorite: true,
+    config: DEFAULT_REPETITION_CONFIG,
     tagIds: []
   },
   {
@@ -110,6 +120,7 @@ export const DecksTD: IDeck[] = [
     updatedAt: "2024-02-01T10:00:00Z",
     isArchived: false,
     isFavorite: true,
+    config: DEFAULT_REPETITION_CONFIG,
     tagIds: []
   },
   {
@@ -120,6 +131,7 @@ export const DecksTD: IDeck[] = [
     updatedAt: "2024-02-05T12:10:00Z",
     isArchived: true,
     isFavorite: false,
+    config: DEFAULT_REPETITION_CONFIG,
     tagIds: ["10"]
   },
   {
@@ -130,6 +142,7 @@ export const DecksTD: IDeck[] = [
     updatedAt: "2024-02-07T16:30:00Z",
     isArchived: true,
     isFavorite: false,
+    config: DEFAULT_REPETITION_CONFIG,
     tagIds: []
   },
   {
@@ -139,6 +152,7 @@ export const DecksTD: IDeck[] = [
     updatedAt: "2024-02-06T10:00:00Z",
     isArchived: true,
     isFavorite: false,
+    config: DEFAULT_REPETITION_CONFIG,
     tagIds: []
   },
   {
@@ -149,6 +163,7 @@ export const DecksTD: IDeck[] = [
     updatedAt: "2024-02-12T09:45:00Z",
     isArchived: false,
     isFavorite: true,
+    config: DEFAULT_REPETITION_CONFIG,
     tagIds: []
   },
   {
@@ -159,6 +174,7 @@ export const DecksTD: IDeck[] = [
     updatedAt: "2024-02-14T18:20:00Z",
     isArchived: false,
     isFavorite: false,
+    config: DEFAULT_REPETITION_CONFIG,
     tagIds: []
   }
 ]
