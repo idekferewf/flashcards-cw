@@ -114,7 +114,12 @@ const hasChanges = computed<boolean>(() => {
   const c = props.deck.config
   const v = r$.$value
 
-  const stepsChanged = (a: unknown[], b: number[]) => a.length !== b.length || a.some((s, i) => Number(s) !== b[i])
+  const stepsChanged = (a: unknown[], b: number[]): boolean => {
+    const aArr = Array.from(a).map(Number)
+    const bArr = Array.from(b).map(Number)
+    if (aArr.length !== bArr.length) return true
+    return aArr.some((n, i) => n !== bArr[i])
+  }
 
   return (
     stepsChanged(v.learningSteps, c.learningSteps) ||
