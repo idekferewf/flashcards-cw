@@ -97,17 +97,17 @@ const close = async () => {
       <div class="absolute top-10 left-1/2 flex -translate-x-1/2 items-center gap-3.5">
         <UTooltip text="Новые">
           <UBadge color="info" variant="subtle" class="cursor-default px-2.5">
-            <code class="text-sm">{{ remainingCounts.new }}</code>
+            <code class="translate-y-px text-sm">{{ remainingCounts.new }}</code>
           </UBadge>
         </UTooltip>
         <UTooltip text="Изучаются / Переучиваются">
           <UBadge color="error" variant="subtle" class="cursor-default px-2.5">
-            <code class="text-sm">{{ remainingCounts.learning }}</code>
+            <code class="translate-y-px text-sm">{{ remainingCounts.learning }}</code>
           </UBadge>
         </UTooltip>
         <UTooltip text="На повторении">
           <UBadge color="neutral" variant="subtle" class="cursor-default px-2.5">
-            <code class="text-sm">{{ remainingCounts.review }}</code>
+            <code class="translate-y-px text-sm">{{ remainingCounts.review }}</code>
           </UBadge>
         </UTooltip>
       </div>
