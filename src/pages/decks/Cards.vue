@@ -221,11 +221,7 @@ const columns: TableColumn<ICard>[] = [
         relearning: "error" as const
       }[row.original.status as TCardStatus]
 
-      return h(
-        UBadge,
-        { class: "capitalize", variant: "subtle", color },
-        () => CardStatusLabels[row.original.status as TCardStatus]
-      )
+      return h(UBadge, { variant: "subtle", color }, () => CardStatusLabels[row.original.status as TCardStatus])
     }
   },
   {

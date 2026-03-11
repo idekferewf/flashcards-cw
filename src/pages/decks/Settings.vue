@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useLeaveConfirm } from "@/composables/use-leave-confirm.composable"
 import { ROUTES } from "@/constants"
 import { useDeckStore } from "@/store/deck.store"
 import type { IDeck, TDeckUpdateDTO } from "@/types"
@@ -13,6 +14,7 @@ const props = defineProps<{
 
 const toast = useToast()
 const deckStore = useDeckStore()
+const { isOpen, onConfirm, onCancel } = useLeaveConfirm(() => r$.$anyEdited && hasChanges.value)
 
 const validSteps = (value: Maybe<number[]>) => {
   if (!Array.isArray(value) || !value.length) return false
@@ -171,7 +173,7 @@ const items: TabsItem[] = [
 </script>
 
 <template>
-  <UForm :schema="r$" :state="r$.$value" @submit="onSubmit">
+  <UForm :schema="r$" :state="r$.$value" class="pr-3" @submit="onSubmit">
     <UTabs
       :items="items"
       class="w-full"
@@ -423,4 +425,6 @@ const items: TabsItem[] = [
     <UButton size="lg" label="Сохранить" color="neutral" :disabled="!hasChanges || !r$.$correct" @click="onSubmit" />
   </div>
   <!-- /Footer -->
+
+  <LeaveConfirmModal :open="isOpen" @confirm="onConfirm" @cancel="onCancel" />
 </template>

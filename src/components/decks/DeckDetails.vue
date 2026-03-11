@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ROUTES } from "@/constants"
+import { useCardStore } from "@/store/card.store"
 import { useDeckStore } from "@/store/deck.store"
 import { useTagStore } from "@/store/tag.store.ts"
-import type { IDeck, ITag } from "@/types"
+import type { ICard, IDeck, ITag } from "@/types"
 import { isOverlayOpen } from "@/utils"
 import type { DropdownMenuItem, NavigationMenuItem } from "@nuxt/ui"
 import { computed, ref } from "vue"
@@ -18,6 +19,7 @@ const toast = useToast()
 const router = useRouter()
 const route = useRoute()
 const deckStore = useDeckStore()
+const cardStore = useCardStore()
 const tagStore = useTagStore()
 
 const editModalOpen = ref<boolean>(false)
@@ -25,6 +27,7 @@ const repetitionModalOpen = ref<boolean>(false)
 const deckToDelete = ref<IDeck | null>(null)
 
 const tags = computed<ITag[]>(() => tagStore.getTagsByDeckOrCard(props.deck))
+const cardsForDue = computed<ICard[]>(() => cardStore.getDueCardsByDeckId(props.deck.id))
 
 const toggleFavorite = () => {
   const wasFavorite = props.deck.isFavorite
@@ -58,6 +61,16 @@ const openEditModal = () => {
 }
 
 const openRepetitionModal = () => {
+  if (!cardsForDue.value.length) {
+    toast.add({
+      title: "Нечего повторять",
+      description: "Все карточки на сегодня повторены. Возвращайтесь завтра!",
+      icon: "i-lucide-calendar-check",
+      color: "success"
+    })
+    return
+  }
+
   repetitionModalOpen.value = true
 }
 
@@ -193,8 +206,8 @@ defineShortcuts({
 
           <USeparator orientation="vertical" class="h-4 px-2" />
 
-          <UTooltip text="Начать повторение">
-            <UButton color="neutral" icon="i-lucide-repeat" @click="openRepetitionModal" />
+          <UTooltip :text="cardsForDue.length ? 'Начать повторение' : 'Нет карточек для повторения'">
+            <UButton color="neutral" icon="i-lucide-repeat" :disabled="!cardsForDue.length" @click="openRepetitionModal" />
           </UTooltip>
         </template>
         <!-- /Right actions -->
@@ -212,7 +225,7 @@ defineShortcuts({
 
       <DeckDeleteModal v-model:deck="deckToDelete" />
       <DeckEditModal v-model:open="editModalOpen" :deck />
-      <RepetitionModal v-model:open="repetitionModalOpen" />
+      <RepetitionModal v-if="repetitionModalOpen" v-model:open="repetitionModalOpen" :deck :cards="cardsForDue" />
     </template>
   </UDashboardPanel>
 </template>

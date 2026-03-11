@@ -25,10 +25,10 @@ export function calculateOverdueBonus(card: ICard, now: Date): number {
 }
 
 export function formatDelay(minutes: number): string {
-  if (minutes < 1) return "<1м"
-  if (minutes < 60) return `${Math.round(minutes)}м`
-  if (minutes < 1440) return `${Math.round(minutes / 60)}ч`
-  if (minutes < 43200) return `${Math.round(minutes / 1440)}д`
-  if (minutes < 525600) return `${Math.round(minutes / 43200)}мес`
+  if (minutes < 1) return "меньше 1 мин."
+  if (minutes < 60) return `${Math.round(minutes)} мин.`
+  if (minutes < 1440) return `${Math.round(minutes / 60)} час.`
+  if (minutes < 43200) return `${Math.round(minutes / 1440)} дн.`
+  if (minutes < 525600) return `${Math.round(minutes / 43200)} мес.`
   return `${Math.round(minutes / 525600)}г`
 }

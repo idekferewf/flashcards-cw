@@ -68,6 +68,34 @@ export const useCardStore = defineStore("cards", () => {
     return cards.value.filter(c => c.deckId === deckId)
   }
 
+  function getDueCardsByDeckId(deckId: string): ICard[] {
+    const now = new Date()
+    const startOfToday = new Date(now)
+    startOfToday.setHours(0, 0, 0, 0)
+
+    const AHEAD_MINUTES = 20
+    const aheadTime = new Date(now.getTime() + AHEAD_MINUTES * 60 * 1000)
+
+    return cards.value.filter(c => {
+      if (c.deckId !== deckId) return false
+
+      const due = new Date(c.dueAt)
+      const status = c.status ?? CardStatus.new
+
+      switch (status) {
+        case CardStatus.new:
+          return true
+
+        case CardStatus.learning:
+        case CardStatus.relearning:
+          return due <= aheadTime
+
+        case CardStatus.review:
+          return due <= startOfToday
+      }
+    })
+  }
+
   return {
     isLoading,
     cards,
@@ -76,6 +104,7 @@ export const useCardStore = defineStore("cards", () => {
     removeCard,
     removeCards,
     togglePin,
-    getCardsByDeckId
+    getCardsByDeckId,
+    getDueCardsByDeckId
   }
 })
