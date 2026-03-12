@@ -1,3 +1,4 @@
+import { DEFAULT_REPETITION_CONFIG } from "@/constants"
 import { DecksTD } from "@/store/temp-data.ts"
 import type { IDeck, TDeckCreateDTO, TDeckUpdateDTO } from "@/types"
 import { type StorageLikeAsync, useStorageAsync } from "@vueuse/core"
@@ -19,6 +20,7 @@ export const useDeckStore = defineStore("decks", () => {
     const newDeck: IDeck = {
       ...data,
       id: crypto.randomUUID(),
+      config: DEFAULT_REPETITION_CONFIG,
       createdAt: now,
       updatedAt: now
     }

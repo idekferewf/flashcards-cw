@@ -16,9 +16,9 @@ function graduate(card: ICard, isEasy: boolean, config: IRepetitionConfig, now: 
     status: CardStatus.review,
     learningStepsCompleted: 0,
     interval,
-    easeFactor: card.easeFactor ?? config.startingEase,
-    repetitions: (card.repetitions ?? 0) + 1,
-    lapses: card.lapses ?? 0,
+    easeFactor: card.easeFactor,
+    repetitions: card.repetitions + 1,
+    lapses: card.lapses,
     dueAt: addDays(now, interval).toISOString()
   }
 }
@@ -29,10 +29,10 @@ function scheduleLearning(card: ICard, rating: TRating, config: IRepetitionConfi
     return graduate(card, false, config, now)
   }
 
-  const currentStep = card.learningStepsCompleted ?? 0
-  const easeFactor = card.easeFactor ?? config.startingEase
-  const repetitions = card.repetitions ?? 0
-  const lapses = card.lapses ?? 0
+  const currentStep = card.learningStepsCompleted
+  const easeFactor = card.easeFactor
+  const repetitions = card.repetitions
+  const lapses = card.lapses
 
   switch (rating) {
     case Rating.again: {
@@ -92,10 +92,10 @@ function scheduleLearning(card: ICard, rating: TRating, config: IRepetitionConfi
 }
 
 function scheduleReview(card: ICard, rating: TRating, config: IRepetitionConfig, now: Date): TRepetitionResult {
-  const interval = card.interval ?? 1
-  const easeFactor = card.easeFactor ?? config.startingEase
-  const repetitions = (card.repetitions ?? 0) + 1
-  const lapses = card.lapses ?? 0
+  const interval = card.interval
+  const easeFactor = card.easeFactor
+  const repetitions = card.repetitions
+  const lapses = card.lapses
   const overdue = calculateOverdueBonus(card, now)
 
   switch (rating) {
@@ -176,11 +176,11 @@ function scheduleReview(card: ICard, rating: TRating, config: IRepetitionConfig,
 
 function scheduleRelearning(card: ICard, rating: TRating, config: IRepetitionConfig, now: Date): TRepetitionResult {
   const steps = config.relearningSteps
-  const currentStep = card.learningStepsCompleted ?? 0
-  const easeFactor = card.easeFactor ?? config.startingEase
-  const repetitions = card.repetitions ?? 0
-  const lapses = card.lapses ?? 0
-  const savedInterval = card.interval ?? 1
+  const currentStep = card.learningStepsCompleted
+  const easeFactor = card.easeFactor
+  const repetitions = card.repetitions
+  const lapses = card.lapses
+  const savedInterval = card.interval
 
   switch (rating) {
     case Rating.again: {
@@ -253,7 +253,7 @@ function scheduleRelearning(card: ICard, rating: TRating, config: IRepetitionCon
 
 export function useCardRepetition(config: IRepetitionConfig) {
   function calculate(card: ICard, rating: TRating, now: Date = new Date()): TRepetitionResult {
-    const status = card.status ?? CardStatus.new
+    const status = card.status
 
     if (status === CardStatus.new || status === CardStatus.learning) {
       return scheduleLearning(card, rating, config, now)

@@ -42,8 +42,9 @@ const onSubmit = async () => {
     front: data.front,
     back: data.back,
     deckId: props.deck.id,
+    tagIds: (data.tags as ITag[]).map(t => t.id),
     isPinned: data.pin ?? false,
-    tagIds: (data.tags as ITag[]).map(t => t.id)
+    easeFactor: props.deck.config.startingEase
   }
   cardStore.addCard(cardCreateDTO)
 

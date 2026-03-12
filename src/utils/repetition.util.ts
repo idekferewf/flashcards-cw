@@ -11,7 +11,7 @@ export function addMinutes(date: Date, minutes: number): Date {
 }
 
 export function getStep(steps: number[], index: number): number {
-  return steps[Math.min(index, steps.length - 1)] ?? steps[0] ?? 1
+  return steps[Math.min(index, steps.length - 1)] ?? (steps[0] as number)
 }
 
 export function clampInterval(next: number, prev: number, max: number): number {

@@ -56,7 +56,7 @@ const onSubmit = async () => {
   const cardUpdateDTO: TCardUpdateDTO = {
     front: data.front,
     back: data.back,
-    isPinned: data.pin ?? false,
+    isPinned: data.pin,
     tagIds: (data.tags as ITag[]).map(t => t.id)
   }
   cardStore.updateDeck(card.value?.id as string, cardUpdateDTO)
@@ -81,7 +81,7 @@ watch(
     r$.$value.front = card?.front
     r$.$value.back = card?.back
     r$.$value.tags = tagStore.getTagsByDeckOrCard(card)
-    r$.$value.pin = card?.isPinned ?? false
+    r$.$value.pin = card?.isPinned
     r$.$reset()
   }
 )

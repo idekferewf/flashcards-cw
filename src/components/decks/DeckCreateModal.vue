@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { DEFAULT_REPETITION_CONFIG } from "@/constants"
 import { useDeckStore } from "@/store/deck.store.ts"
 import type { IDeck, ITag, TDeckCreateDTO } from "@/types"
 import { useRegle } from "@regle/core"
@@ -47,8 +46,7 @@ const onSubmit = async () => {
     description: data.description,
     isFavorite: data.favorite ?? false,
     isArchived: data.archive ?? false,
-    tagIds: (data.tags as ITag[]).map(t => t.id),
-    config: DEFAULT_REPETITION_CONFIG
+    tagIds: (data.tags as ITag[]).map(t => t.id)
   }
   const newDeck = deckStore.addDeck(deckCreateDTO)
 

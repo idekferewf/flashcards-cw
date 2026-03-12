@@ -6,13 +6,6 @@ import { defineStore } from "pinia"
 import { ref } from "vue"
 
 export const useCardStore = defineStore("cards", () => {
-  CardsTD.forEach(card => {
-    if (!card.status) {
-      card.status = CardStatus.new
-    }
-    card.isPinned = Math.random() > 0.5
-  })
-
   const isLoading = ref<boolean>(true)
   const cards = useStorageAsync<ICard[]>("cards", [...CardsTD], localforage as StorageLikeAsync, {
     onReady: () => (isLoading.value = false)
@@ -25,7 +18,7 @@ export const useCardStore = defineStore("cards", () => {
       id: crypto.randomUUID(),
       status: CardStatus.new,
       learningStepsCompleted: 0,
-      easeFactor: 2.5,
+      interval: 0,
       repetitions: 0,
       lapses: 0,
       dueAt: now,

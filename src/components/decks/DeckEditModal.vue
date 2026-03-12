@@ -23,8 +23,8 @@ const { r$ } = useRegle(
     name: props.deck.name,
     description: props.deck.description ?? "",
     tags: tagStore.getTagsByDeckOrCard(props.deck),
-    archive: props.deck.isArchived ?? false,
-    favorite: props.deck.isFavorite ?? false
+    archive: props.deck.isArchived,
+    favorite: props.deck.isFavorite
   },
   {
     name: {
@@ -58,8 +58,8 @@ const onSubmit = async () => {
   const deckUpdateDTO: TDeckUpdateDTO = {
     name: data.name,
     description: data.description,
-    isFavorite: data.favorite ?? false,
-    isArchived: data.archive ?? false,
+    isFavorite: data.favorite,
+    isArchived: data.archive,
     tagIds: (data.tags as ITag[]).map(t => t.id)
   }
   deckStore.updateDeck(props.deck.id, deckUpdateDTO)
@@ -84,8 +84,8 @@ watch(
     r$.$value.name = deck.name
     r$.$value.description = deck.description ?? ""
     r$.$value.tags = tagStore.getTagsByDeckOrCard(deck)
-    r$.$value.archive = deck.isArchived ?? false
-    r$.$value.favorite = deck.isFavorite ?? false
+    r$.$value.archive = deck.isArchived
+    r$.$value.favorite = deck.isFavorite
     r$.$reset()
   }
 )

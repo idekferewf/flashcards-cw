@@ -20,20 +20,20 @@ export interface ICard {
   front: string
   back: string
   tagIds: string[]
-  isPinned?: boolean
+  isPinned: boolean
 
-  status?: TCardStatus
-  learningStepsCompleted?: number
-  interval?: number
-  easeFactor?: number
-  repetitions?: number
-  lapses?: number
+  status: TCardStatus
+  learningStepsCompleted: number
+  interval: number
+  easeFactor: number
+  repetitions: number
+  lapses: number
   dueAt: string
 
   createdAt: string
-  updatedAt?: string
+  updatedAt: string
 }
 
-export type TCardCreateDTO = Omit<ICard, "id" | "dueAt" | "createdAt" | "updatedAt">
+export type TCardCreateDTO = Pick<ICard, "deckId" | "front" | "back" | "tagIds" | "isPinned" | "easeFactor">
 
-export type TCardUpdateDTO = Partial<TCardCreateDTO>
+export type TCardUpdateDTO = Partial<Omit<ICard, "id" | "deckId" | "updatedAt" | "createdAt">>

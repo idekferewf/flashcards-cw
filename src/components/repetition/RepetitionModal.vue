@@ -117,7 +117,7 @@ const close = async () => {
       <div v-if="isFinished" class="flex h-full w-full flex-col items-center justify-center">
         <UIcon name="i-lucide-party-popper" class="size-44" />
         <p class="text-default mt-8 text-2xl font-medium">Повторение завершено!</p>
-        <div class="border-default mt-10 grid grid-cols-4 grid-rows-2 overflow-hidden rounded-xl border text-sm">
+        <div class="border-default mt-8 grid grid-cols-4 grid-rows-2 overflow-hidden rounded-xl border text-sm">
           <div class="border-default border-r border-b px-4 py-3 text-center">Снова</div>
           <div class="border-default border-r border-b px-4 py-3 text-center">Трудно</div>
           <div class="border-default border-r border-b px-4 py-3 text-center">Хорошо</div>

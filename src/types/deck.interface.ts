@@ -14,6 +14,6 @@ export interface IDeck {
   config: IRepetitionConfig
 }
 
-export type TDeckCreateDTO = Omit<IDeck, "id" | "createdAt" | "updatedAt">
+export type TDeckCreateDTO = Omit<IDeck, "id" | "config" | "createdAt" | "updatedAt">
 
-export type TDeckUpdateDTO = Partial<TDeckCreateDTO>
+export type TDeckUpdateDTO = Partial<Omit<IDeck, "id" | "createdAt" | "updatedAt">>

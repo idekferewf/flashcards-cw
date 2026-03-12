@@ -69,7 +69,8 @@ const getRowItems = (row: Row<ICard>) => {
     },
     {
       label: "Просмотр",
-      icon: "i-lucide-eye"
+      icon: "i-lucide-eye",
+      disabled: true
     },
     {
       label: "Копировать ID",
@@ -130,22 +131,21 @@ const columns: TableColumn<ICard>[] = [
         relearning: "error" as const
       }[row.original.status as TCardStatus]
 
-      return h(
-        UBadge,
-        { class: "capitalize", variant: "subtle", color },
-        () => CardStatusLabels[row.original.status as TCardStatus]
-      )
-    }
-  },
-  {
-    accessorKey: "interval",
-    header: "Текущий интервал",
-    cell: ({ row }) => {
-      return row.original.interval ?? "34"
+      return h(UBadge, { variant: "subtle", color }, () => CardStatusLabels[row.original.status as TCardStatus])
     }
   },
   {
     accessorKey: "dueAt",
+    sortingFn: (rowA, rowB) => {
+      const a = rowA.original
+      const b = rowB.original
+
+      if (a.status === CardStatus.new && b.status === CardStatus.new) return 0
+      if (a.status === CardStatus.new) return 1
+      if (b.status === CardStatus.new) return -1
+
+      return new Date(a.dueAt).getTime() - new Date(b.dueAt).getTime()
+    },
     header: ({ column }) => {
       const isSorted = column.getIsSorted()
 
@@ -163,7 +163,9 @@ const columns: TableColumn<ICard>[] = [
       })
     },
     cell: ({ row }) => {
-      return formatRelative(new Date(row.original.dueAt), new Date(), { locale: ru })
+      return row.original.status === CardStatus.new
+        ? "—"
+        : formatRelative(new Date(row.original.dueAt), new Date(), { locale: ru })
     }
   },
   {
@@ -228,7 +230,7 @@ const statusOptions: SelectMenuItem[] = [
         <!-- /Count -->
 
         <template #right>
-          <UButton color="neutral" size="lg" variant="ghost" class="gap-1.5">
+          <UButton disabled color="neutral" size="lg" variant="ghost" class="gap-1.5">
             <UIcon name="i-lucide-book-plus" class="size-[18px]" />
             Создать карточку
             <UKbd size="sm" class="ml-0.5 translate-y-px">alt + n</UKbd>
@@ -262,7 +264,7 @@ const statusOptions: SelectMenuItem[] = [
             size="lg"
             icon="i-lucide-flag"
             placeholder="Выберите статус"
-            class="w-48"
+            class="w-[200px]"
           />
           <!-- /Status -->
 

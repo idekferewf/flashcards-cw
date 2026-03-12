@@ -2,7 +2,7 @@
 import { ROUTES } from "@/constants"
 import { useCardStore } from "@/store/card.store"
 import { useTagStore } from "@/store/tag.store"
-import { CardStatus, CardStatusLabels, type ICard, type IDeck, type TCardStatus } from "@/types"
+import { CardStatus, CardStatusLabels, type ICard, type IDeck } from "@/types"
 import type { SelectMenuItem, TableColumn } from "@nuxt/ui"
 import { useToast } from "@nuxt/ui/composables"
 import {
@@ -94,7 +94,8 @@ const getRowItems = (row: Row<ICard>) => {
     },
     {
       label: "Просмотр",
-      icon: "i-lucide-eye"
+      icon: "i-lucide-eye",
+      disabled: true
     },
     {
       label: pinned ? "Открепить" : "Закрепить",
@@ -219,13 +220,23 @@ const columns: TableColumn<ICard>[] = [
         learning: "warning" as const,
         review: "neutral" as const,
         relearning: "error" as const
-      }[row.original.status as TCardStatus]
+      }[row.original.status]
 
-      return h(UBadge, { variant: "subtle", color }, () => CardStatusLabels[row.original.status as TCardStatus])
+      return h(UBadge, { variant: "subtle", color }, () => CardStatusLabels[row.original.status])
     }
   },
   {
     accessorKey: "dueAt",
+    sortingFn: (rowA, rowB) => {
+      const a = rowA.original
+      const b = rowB.original
+
+      if (a.status === CardStatus.new && b.status === CardStatus.new) return 0
+      if (a.status === CardStatus.new) return 1
+      if (b.status === CardStatus.new) return -1
+
+      return new Date(a.dueAt).getTime() - new Date(b.dueAt).getTime()
+    },
     header: ({ column }) => {
       const isSorted = column.getIsSorted()
 
@@ -243,7 +254,9 @@ const columns: TableColumn<ICard>[] = [
       })
     },
     cell: ({ row }) => {
-      return formatRelative(new Date(row.original.dueAt), new Date(), { locale: ru })
+      return row.original.status === CardStatus.new
+        ? "—"
+        : formatRelative(new Date(row.original.dueAt), new Date(), { locale: ru })
     }
   },
   {
