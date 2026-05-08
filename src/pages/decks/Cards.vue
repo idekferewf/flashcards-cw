@@ -11,6 +11,7 @@ import {
   type Row,
   type RowSelectionState,
   type SortingState,
+  type Table,
   type TableMeta,
   type VisibilityState
 } from "@tanstack/table-core"
@@ -37,10 +38,13 @@ const toast = useToast()
 const cardStore = useCardStore()
 const tagStore = useTagStore()
 
-const table = useTemplateRef("table")
+const table = useTemplateRef<{
+  tableApi: Table<ICard>
+}>("table")
 
 const cardToDelete = ref<ICard | null>(null)
 const cardToEdit = ref<ICard | null>(null)
+const cardsDeleteModalOpen = ref<boolean>(false)
 
 const sortingState = ref<SortingState>([
   { id: "isPinned", desc: true },
@@ -50,12 +54,10 @@ const columnVisibilityState = ref<VisibilityState>({ isPinned: false })
 const rowSelectionState = ref<RowSelectionState>()
 const paginationState = ref<PaginationState>({ pageIndex: 0, pageSize: 20 })
 
-const cards = computed(() => {
-  return cardStore.getCardsByDeckId(props.deck.id)
-})
+const cards = computed<ICard[]>(() => cardStore.getCardsByDeckId(props.deck.id))
 
-const selectedCards = computed((): ICard[] => {
-  return table.value?.tableApi?.getFilteredSelectedRowModel().rows.map(r => r.original as ICard) ?? []
+const selectedCards = computed<ICard[]>(() => {
+  return table.value?.tableApi?.getFilteredSelectedRowModel().rows.map(r => r.original) ?? []
 })
 
 const selectedStatuses = computed<string[]>({
@@ -232,8 +234,8 @@ const columns: TableColumn<ICard>[] = [
       const b = rowB.original
 
       if (a.status === CardStatus.new && b.status === CardStatus.new) return 0
-      if (a.status === CardStatus.new) return 1
-      if (b.status === CardStatus.new) return -1
+      if (a.status === CardStatus.new) return -1
+      if (b.status === CardStatus.new) return 1
 
       return new Date(a.dueAt).getTime() - new Date(b.dueAt).getTime()
     },
@@ -254,9 +256,10 @@ const columns: TableColumn<ICard>[] = [
       })
     },
     cell: ({ row }) => {
-      return row.original.status === CardStatus.new
-        ? "—"
-        : formatRelative(new Date(row.original.dueAt), new Date(), { locale: ru })
+      if (row.original.status === CardStatus.new) {
+        return "—"
+      }
+      return formatRelative(new Date(row.original.dueAt), new Date(), { locale: ru })
     }
   },
   {
@@ -313,16 +316,31 @@ watch(
   }
 )
 
+watch(
+  () => table.value?.tableApi?.getSelectedRowModel().rows.length ?? 0,
+  count => {
+    cardStore.hasSelectedCards = count > 0
+  }
+)
+
 onMounted(() => {
   const selectId = route.query.selectId
   if (selectId) {
     selectRow(selectId as string)
   }
 })
+
+defineShortcuts({
+  delete: () => {
+    if (cardStore.hasSelectedCards) {
+      cardsDeleteModalOpen.value = true
+    }
+  }
+})
 </script>
 
 <template>
-  <div class="flex flex-wrap items-center justify-between gap-1.5">
+  <div class="flex items-center justify-between gap-1.5">
     <!-- Search -->
     <UInput
       v-model="front"
@@ -333,19 +351,7 @@ onMounted(() => {
     />
     <!-- /Search -->
 
-    <div class="flex flex-wrap items-center gap-1.5">
-      <!-- Multi delete modal -->
-      <CardsDeleteModal :cards="selectedCards">
-        <UButton v-if="selectedCards.length" label="Удалить" size="lg" color="error" variant="subtle" icon="i-lucide-trash">
-          <template #trailing>
-            <UKbd>
-              {{ selectedCards.length }}
-            </UKbd>
-          </template>
-        </UButton>
-      </CardsDeleteModal>
-      <!-- /Multi delete modal -->
-
+    <div class="flex items-center gap-1.5">
       <!-- Status -->
       <USelectMenu
         v-model="selectedStatuses"
@@ -356,7 +362,6 @@ onMounted(() => {
         size="lg"
         icon="i-lucide-flag"
         placeholder="Выберите статус"
-        class="w-48"
       />
       <!-- /Status -->
 
@@ -397,7 +402,7 @@ onMounted(() => {
     :data="cards"
     :columns="columns"
     :meta="meta"
-    class="shrink-0"
+    class="-mt-2 shrink-0"
     :ui="{
       base: 'table-fixed border-separate border-spacing-0',
       thead: '[&>tr]:bg-elevated/50 [&>tr]:after:content-none',
@@ -449,4 +454,26 @@ onMounted(() => {
   <!-- Single delete modal -->
   <CardDeleteModal v-model:card="cardToDelete" />
   <!-- /Single delete modal -->
+
+  <!-- Multi delete modal -->
+  <CardsDeleteModal v-model:open="cardsDeleteModalOpen" :cards="selectedCards">
+    <div class="bg-default absolute bottom-6 left-1/2 z-50 -translate-x-1/2 overflow-hidden rounded-xl">
+      <UButton
+        v-if="selectedCards.length"
+        label="Удалить"
+        size="lg"
+        color="error"
+        variant="subtle"
+        icon="i-lucide-trash"
+        class="rounded-xl px-3.5 py-2.5"
+      >
+        <template #trailing>
+          <UKbd>
+            {{ selectedCards.length }}
+          </UKbd>
+        </template>
+      </UButton>
+    </div>
+  </CardsDeleteModal>
+  <!-- /Multi delete modal -->
 </template>

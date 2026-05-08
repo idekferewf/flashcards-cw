@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { useCardStore } from "@/store/card.store.ts"
+import { useCardStore } from "@/store/card.store"
+import { useTagStore } from "@/store/tag.store"
 import type { ICard } from "@/types"
 import { pluralize } from "@/utils"
 import { useResizeObserver } from "@vueuse/core"
 import { computed, nextTick, ref, useTemplateRef, watch } from "vue"
+
+const open = defineModel<boolean>("open", { default: false })
 
 const props = defineProps<{
   cards: ICard[]
@@ -11,10 +14,10 @@ const props = defineProps<{
 
 const toast = useToast()
 const cardStore = useCardStore()
+const tagStore = useTagStore()
 
 const cardsToDeleteRef = useTemplateRef<HTMLDivElement>("cardsToDelete")
 
-const open = ref<boolean>(false)
 const cardsToBack = ref<Set<string>>(new Set())
 const hasScroll = ref<boolean>(false)
 
@@ -66,7 +69,7 @@ useResizeObserver(cardsToDeleteRef, () => {
     v-model:open="open"
     :title="title"
     :description="`Вы точно уверены? Карточки ниже будут безвозвратно удалены.`"
-    :ui="{ body: 'pt-0.5 sm:pt-1.5' }"
+    :ui="{ body: 'pt-0 sm:pt-0' }"
   >
     <!-- Trigger -->
     <slot />
@@ -77,7 +80,7 @@ useResizeObserver(cardsToDeleteRef, () => {
       <div ref="cardsToDelete" class="max-h-72 overflow-y-auto">
         <div v-for="card in cardsToDelete" :key="card.id" class="group border-default relative border-t py-3.5 first:border-0">
           <span class="text-sm">{{ card.front }}</span>
-          <TagList v-if="card.tags" :tags="card.tags" class="mt-1 text-[10px]" />
+          <TagList v-if="card.tagIds.length" :tags="tagStore.getTagsByDeckOrCard(card)" class="mt-1 text-[10px]" />
           <UButton
             size="xs"
             label="Вернуть"
@@ -93,7 +96,7 @@ useResizeObserver(cardsToDeleteRef, () => {
       <!-- /Cards -->
 
       <!-- Footer -->
-      <div class="mt-3.5 flex justify-end gap-2">
+      <div class="mt-2.5 flex justify-end gap-2">
         <UButton
           label="Отмена"
           color="neutral"

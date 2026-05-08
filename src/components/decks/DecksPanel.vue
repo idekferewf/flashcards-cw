@@ -35,11 +35,14 @@ const isLocked = ref<boolean>(false)
 const hasArchivedDecks = computed<boolean>(() => props.archivedDecks.length != 0)
 
 const archivedDeckNames = computed<string>(() => {
-  return props.archivedDecks.map(deck => deck.name).join(", ")
+  return props.archivedDecks
+    .map(deck => deck.name)
+    .slice(0, 4)
+    .join(", ")
 })
 
 const selectDeck = (deck: IDeck) => {
-  router.replace({
+  router.push({
     name: ROUTES.DECKS.children.index.name,
     params: { deckId: deck.id }
   })
@@ -105,16 +108,6 @@ const onWheel = (e: WheelEvent) => {
   }
 }
 
-watch(selectedDeck, () => {
-  if (!selectedDeck.value) return
-  const el = selectedDeck.value?.isArchived
-    ? archivedListRef.value?.getDeckEl(selectedDeck.value.id)
-    : activeListRef.value?.getDeckEl(selectedDeck.value.id)
-  if (el) {
-    el.scrollIntoView({ block: "nearest", behavior: "smooth" })
-  }
-})
-
 const moveSelection = (direction: 1 | -1) => {
   const decks = archiveOpen.value ? props.archivedDecks : props.decks
   if (!decks.length) return
@@ -135,14 +128,31 @@ const moveSelection = (direction: 1 | -1) => {
   selectDeck(deck)
 }
 
+watch(selectedDeck, () => {
+  if (!selectedDeck.value) return
+  const el = selectedDeck.value?.isArchived
+    ? archivedListRef.value?.getDeckEl(selectedDeck.value.id)
+    : activeListRef.value?.getDeckEl(selectedDeck.value.id)
+  if (el) {
+    el.scrollIntoView({ block: "nearest", behavior: "smooth" })
+  }
+})
+
 watch(
-  () => props.archivedDecks,
-  () => {
-    if (!props.archivedDecks.length) {
+  () => props.archivedDecks.length,
+  (length: number) => {
+    if (!length) {
       unlockArchive()
     }
   }
 )
+
+useResizeObserver(scrollRef, () => {
+  const el = scrollRef.value
+  if (!el) return
+
+  hasScroll.value = el.scrollHeight > el.clientHeight
+})
 
 defineShortcuts({
   arrowdown: () => {
@@ -153,13 +163,6 @@ defineShortcuts({
     if (isOverlayOpen()) return
     moveSelection(-1)
   }
-})
-
-useResizeObserver(scrollRef, () => {
-  const el = scrollRef.value
-  if (!el) return
-
-  hasScroll.value = el.scrollHeight > el.clientHeight
 })
 </script>
 
@@ -179,7 +182,7 @@ useResizeObserver(scrollRef, () => {
       <div class="border-b-default flex min-h-16 items-center justify-between gap-1.5 border-b p-4 sm:px-6">
         <div class="flex items-center gap-3.5 text-sm font-semibold">
           <div class="bg-primary flex size-10 min-w-10 items-center justify-center rounded-full">
-            <UIcon name="i-lucide-archive" class="text-inverted size-4" />
+            <UIcon name="i-lucide-archive" class="text-inverted size-[18px]" />
           </div>
           <div class="flex flex-col gap-y-0.5">
             <span>Архивированные колоды</span>
@@ -220,7 +223,7 @@ useResizeObserver(scrollRef, () => {
       >
         <div class="flex items-center gap-3.5">
           <div class="bg-primary flex size-12 min-w-12 items-center justify-center rounded-full">
-            <UIcon name="i-lucide-archive" class="text-inverted size-5" />
+            <UIcon name="i-lucide-archive" class="text-inverted size-[22px]" />
           </div>
           <div class="flex flex-col gap-y-0.5 text-sm font-semibold">
             <span>Архив</span>

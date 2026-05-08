@@ -167,7 +167,7 @@ watch(
 
     <template #footer>
       <UButton size="lg" label="Отмена" variant="outline" color="neutral" @click="close" />
-      <UButton size="lg" label="Сохранить" color="neutral" :disabled="!hasChanges || !r$.$correct" @click="onSubmit" />
+      <UButton size="lg" label="Сохранить" color="neutral" :disabled="!hasChanges || r$.$invalid" @click="onSubmit" />
     </template>
   </USlideover>
 </template>

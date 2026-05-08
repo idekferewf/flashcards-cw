@@ -26,6 +26,7 @@ const onSubmit = () => {
   if (!deck.value) return
 
   deckStore.removeDeck(deck.value.id)
+  cardStore.removeCards(deckCards.value.map((card: ICard) => card.id))
   deck.value = null
 
   toast.add({
@@ -33,7 +34,7 @@ const onSubmit = () => {
     description: h("span", undefined, [
       "Колода ",
       h("span", { class: "underline" }, [deckName.value]),
-      " и её содержимое было удалено."
+      " и её карточки были удалены."
     ]),
     icon: "i-lucide-trash"
   })
@@ -65,25 +66,12 @@ watch(deck, value => {
     <template #description>
       Вы точно уверены? Колода <u>{{ deckName }}</u> будет удалена без возможности восстановления.
       <span v-if="deckCards.length">
-        Перечисленные ниже карточки (<u>{{ deckCards.length }}</u
-        >) также будут удалены:
+        Все карточки (<u>{{ deckCards.length }}</u
+        >) также будут удалены.
       </span>
     </template>
 
     <template #body>
-      <!-- Cards -->
-      <div v-if="deckCards" class="max-h-72 overflow-y-auto">
-        <div
-          v-for="card in deckCards"
-          :key="card.id"
-          class="group border-default relative border-t py-3.5 first:border-0 first:pt-0.5"
-        >
-          <span class="text-sm">{{ card.front }}</span>
-          <TagList v-if="card.tags" :tags="card.tags" class="mt-1 text-[10px]" />
-        </div>
-      </div>
-      <!-- /Cards -->
-
       <div class="flex justify-end gap-2 pt-1">
         <UButton label="Отмена" color="neutral" variant="subtle" class="cancel-button px-4" @click="open = false" />
         <UButton label="Удалить" color="error" variant="solid" class="px-4" @click="onSubmit" />

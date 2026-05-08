@@ -1,4 +1,5 @@
 export * from "./card.interface.ts"
+export * from "./color-mode.type.ts"
 export * from "./deck.interface.ts"
 export * from "./repetition-config.interface.ts"
 export * from "./repetition.type.ts"

@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import Logo from "@/components/Logo.vue"
-import { ROUTES } from "@/constants"
+import { useThemeSettings } from "@/composables/use-theme-settings.composable"
+import { ROUTES, THEME_COLOR_MODE } from "@/constants"
 import { useCardStore } from "@/store/card.store"
 import { useDeckStore } from "@/store/deck.store"
+import type { TColorMode } from "@/types"
 import type { CommandPaletteGroup, NavigationMenuItem, ToasterProps } from "@nuxt/ui"
 import { useColorMode } from "@vueuse/core"
-import { computed, ref, watch } from "vue"
+import { computed, onMounted, ref, watch } from "vue"
 import { useRoute, useRouter } from "vue-router"
 
 const toaster: ToasterProps = { position: "bottom-center" }
@@ -18,12 +20,13 @@ const menuItemUI: NavigationMenuItem["ui"] = {
 const route = useRoute()
 const router = useRouter()
 const colorMode = useColorMode()
+const { applyStoredSettings } = useThemeSettings()
 const cardStore = useCardStore()
 const deckStore = useDeckStore()
 
 const isCollapsed = ref<boolean>(false)
 
-const changeTheme = (theme: "dark" | "light") => {
+const changeTheme = (theme: TColorMode) => {
   colorMode.value = theme
 }
 
@@ -107,18 +110,22 @@ const groups = computed<CommandPaletteGroup[]>(() => [
       {
         label: "Светлая",
         icon: "i-lucide-sun",
-        disabled: colorMode.value === "light",
-        onSelect: () => changeTheme("light")
+        disabled: colorMode.value === THEME_COLOR_MODE.light,
+        onSelect: () => changeTheme(THEME_COLOR_MODE.light)
       },
       {
         label: "Тёмная",
         icon: "i-lucide-moon",
-        disabled: colorMode.value === "dark",
-        onSelect: () => changeTheme("dark")
+        disabled: colorMode.value === THEME_COLOR_MODE.dark,
+        onSelect: () => changeTheme(THEME_COLOR_MODE.dark)
       }
     ]
   }
 ])
+
+onMounted(() => {
+  applyStoredSettings()
+})
 </script>
 
 <template>
@@ -131,7 +138,7 @@ const groups = computed<CommandPaletteGroup[]>(() => [
         :max-size="20"
         resizable
         collapsible
-        :ui="{ footer: 'py-4 lg:border-t lg:border-default' }"
+        :ui="{ footer: 'py-3 lg:border-t lg:border-default' }"
       >
         <!-- Header -->
         <template #header="{ collapsed }">
@@ -157,7 +164,7 @@ const groups = computed<CommandPaletteGroup[]>(() => [
 
         <!-- Footer -->
         <template #footer="{ collapsed }">
-          <ColorModeSidebarButton :collapsed />
+          <FooterSidebar :collapsed />
         </template>
         <!-- /Footer -->
 

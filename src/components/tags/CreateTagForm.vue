@@ -59,6 +59,7 @@ const onSubmit = (tag: ITag) => {
       <USelectMenu
         v-model="tags as ITagView[]"
         :items="tagStore.tagViews"
+        virtualize
         multiple
         size="sm"
         :search-input="{ placeholder: 'Искать...', icon: 'i-lucide-search' }"

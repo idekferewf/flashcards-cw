@@ -53,6 +53,7 @@ export const useDeckStore = defineStore("decks", () => {
     const deck = decks.value.find(d => d.id === id)
     if (deck) {
       deck[key] = !deck[key]
+      deck.updatedAt = new Date().toISOString()
     }
   }
 

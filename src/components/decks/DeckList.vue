@@ -4,7 +4,7 @@ import { ref } from "vue"
 
 defineProps<{
   decks: IDeck[]
-  selectedId?: string | number
+  selectedId?: string
 }>()
 
 const emit = defineEmits<{

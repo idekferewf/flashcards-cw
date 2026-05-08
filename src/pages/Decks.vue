@@ -31,7 +31,7 @@ const tabItems: TabsItem[] = [
 ]
 
 const toast = useToast()
-const store = useDeckStore()
+const deckStore = useDeckStore()
 const tagStore = useTagStore()
 
 const toolbarRef = useTemplateRef("toolbar")
@@ -48,16 +48,15 @@ const selectedTab = ref<TTabItem>(TabItem.all)
 const selectedTags = ref<string[]>([])
 
 const selectedDeck = computed<IDeck | null>(() => {
-  if (!store.decks) return null
-  return store.getDeckById(props.deckId)
+  return deckStore.getDeckById(props.deckId)
 })
 
 const selectedTagSet = computed(() => new Set(selectedTags.value))
 
 const filteredDecks = computed<IDeck[]>(() => {
-  let decks = store.activeDecks
+  let decks = deckStore.activeDecks
   if (hasArchive.value) {
-    decks = decks.concat(store.archivedDecks)
+    decks = decks.concat(deckStore.archivedDecks)
   }
 
   decks = filterFavorite(decks)
@@ -71,7 +70,7 @@ const filteredDecks = computed<IDeck[]>(() => {
 })
 
 const archivedDecks = computed<IDeck[]>(() => {
-  let decks = filterFavorite(store.archivedDecks)
+  let decks = filterFavorite(deckStore.archivedDecks)
 
   if (isArchiveOpen.value) {
     decks = filterByTags(decks)
@@ -82,9 +81,9 @@ const archivedDecks = computed<IDeck[]>(() => {
 })
 
 const tagOptions = computed(() => {
-  let decks = store.archivedDecks
+  let decks = deckStore.archivedDecks
   if (!isArchiveOpen.value) {
-    decks = store.activeDecks
+    decks = deckStore.activeDecks
     if (hasArchive.value) {
       decks = decks.concat(archivedDecks.value)
     }
@@ -119,16 +118,15 @@ const filterByTags = (decks: IDeck[]) => {
 
     const deckTagIds = deck.tagIds
     for (const tagId of selectedTagSet.value) {
-      if (!deckTagIds.includes(tagId)) return false
+      if (deckTagIds.includes(tagId)) return true
     }
 
-    return true
+    return false
   })
 }
 
 const filterBySearch = (decks: IDeck[]) => {
   const searchValue = search.value?.trim().toLowerCase()
-
   if (!searchValue) return decks
 
   return decks.filter(deck => {
@@ -191,7 +189,8 @@ watch(
       <!-- Count -->
       <template #trailing>
         <UBadge
-          :label="!store.isLoading && isArchiveOpen ? archivedDecks.length : filteredDecks.length"
+          v-if="!deckStore.isLoading"
+          :label="isArchiveOpen ? archivedDecks.length : filteredDecks.length"
           variant="subtle"
           color="neutral"
         />

@@ -15,6 +15,7 @@ export const useLeaveConfirm = (isDirty: () => boolean) => {
     isOpen.value = false
     resolve?.(true)
   }
+
   const onCancel = () => {
     isOpen.value = false
     resolve?.(false)

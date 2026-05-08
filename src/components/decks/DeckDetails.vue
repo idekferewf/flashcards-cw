@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ROUTES } from "@/constants"
-import { useCardStore } from "@/store/card.store"
-import { useDeckStore } from "@/store/deck.store"
+import { useCardStore } from "@/store/card.store.ts"
+import { useDeckStore } from "@/store/deck.store.ts"
 import { useTagStore } from "@/store/tag.store.ts"
 import type { ICard, IDeck, ITag } from "@/types"
 import { isOverlayOpen } from "@/utils"
@@ -15,9 +15,9 @@ const props = defineProps<{
 
 const emit = defineEmits(["close"])
 
-const toast = useToast()
 const router = useRouter()
 const route = useRoute()
+const toast = useToast()
 const deckStore = useDeckStore()
 const cardStore = useCardStore()
 const tagStore = useTagStore()
@@ -26,6 +26,13 @@ const editModalOpen = ref<boolean>(false)
 const repetitionModalOpen = ref<boolean>(false)
 const deckToDelete = ref<IDeck | null>(null)
 
+const panelBodyClasses = computed<string>(() => {
+  const baseBody = "overflow-x-hidden scrollbar-4px"
+  if (route.name === ROUTES.DECKS.children.createCard.name) {
+    return `${baseBody} !p-0`
+  }
+  return baseBody
+})
 const tags = computed<ITag[]>(() => tagStore.getTagsByDeckOrCard(props.deck))
 const cardsForDue = computed<ICard[]>(() => cardStore.getDueCardsByDeckId(props.deck.id))
 
@@ -136,7 +143,7 @@ defineShortcuts({
     usingInput: true
   },
   delete: () => {
-    if (isOverlayOpen()) return
+    if (isOverlayOpen() || cardStore.hasSelectedCards) return
     openDeleteModal()
   },
   alt_n: {
@@ -150,7 +157,7 @@ defineShortcuts({
 </script>
 
 <template>
-  <UDashboardPanel :ui="{ body: 'overflow-x-hidden scrollbar-4px' }">
+  <UDashboardPanel :ui="{ body: panelBodyClasses }">
     <template #header>
       <UDashboardNavbar :toggle="false">
         <!-- Name -->
@@ -159,6 +166,7 @@ defineShortcuts({
             <UButton icon="i-lucide-x" color="neutral" variant="ghost" class="-ms-1.5" @click="emit('close')" />
           </UTooltip>
         </template>
+
         <template #title>
           <h1>{{ deck.name }}</h1>
           <TagList
@@ -170,7 +178,7 @@ defineShortcuts({
         </template>
         <!-- /Name -->
 
-        <!-- Right actions -->
+        <!-- Right -->
         <template #right>
           <UButton :to="{ name: ROUTES.DECKS.children.createCard.name }" icon="i-lucide-plus" color="neutral" variant="ghost">
             Добавить карточку
@@ -206,9 +214,11 @@ defineShortcuts({
 
           <USeparator orientation="vertical" class="h-4 px-2" />
 
+          <!-- Repetition -->
           <UTooltip :text="cardsForDue.length ? 'Начать повторение' : 'Нет карточек для повторения'">
             <UButton color="neutral" icon="i-lucide-repeat" :disabled="!cardsForDue.length" @click="openRepetitionModal" />
           </UTooltip>
+          <!-- Repetition -->
         </template>
         <!-- /Right actions -->
       </UDashboardNavbar>

@@ -10,6 +10,7 @@ export const useCardStore = defineStore("cards", () => {
   const cards = useStorageAsync<ICard[]>("cards", [...CardsTD], localforage as StorageLikeAsync, {
     onReady: () => (isLoading.value = false)
   })
+  const hasSelectedCards = ref<boolean>(false)
 
   function addCard(data: TCardCreateDTO): ICard {
     const now = new Date().toISOString()
@@ -92,6 +93,7 @@ export const useCardStore = defineStore("cards", () => {
   return {
     isLoading,
     cards,
+    hasSelectedCards,
     addCard,
     updateDeck,
     removeCard,
