@@ -14,6 +14,8 @@
     "@nuxt/ui": "^4.3.0",
     "@regle/core": "^1.17.3",
     "@regle/rules": "^1.17.3",
+    "@unovis/ts": "^1.6.5",
+    "@unovis/vue": "^1.6.5",
     "date-fns": "^4.1.0",
     "localforage": "^1.10.0",
     "pinia": "^3.0.4",

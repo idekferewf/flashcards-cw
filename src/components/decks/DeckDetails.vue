@@ -105,25 +105,24 @@ const toolbarLinks = computed<NavigationMenuItem[]>(() => [
   {
     label: "Список карточек",
     icon: "i-lucide-book-a",
-    to: ROUTES.DECKS.children.index.fullPath(props.deck?.id ?? "")
+    to: ROUTES.DECKS.children.index.fullPath(props.deck.id)
   },
   {
     label: "Статистика",
     icon: "i-lucide-chart-no-axes-combined",
-    to: ROUTES.DECKS.children.statistics.fullPath(props.deck?.id ?? ""),
-    disabled: true
+    to: ROUTES.DECKS.children.statistics.fullPath(props.deck.id)
   },
   {
     label: "Настройки",
     icon: "i-lucide-settings",
-    to: ROUTES.DECKS.children.settings.fullPath(props.deck?.id ?? "")
+    to: ROUTES.DECKS.children.settings.fullPath(props.deck.id)
   },
   ...(route.name === ROUTES.DECKS.children.createCard.name
     ? [
         {
           label: "Создание карточки",
           icon: "i-lucide-square-plus",
-          to: ROUTES.DECKS.children.createCard.fullPath(props.deck?.id ?? ""),
+          to: ROUTES.DECKS.children.createCard.fullPath(props.deck.id),
           ui: { item: "ml-auto" }
         }
       ]
@@ -180,10 +179,15 @@ defineShortcuts({
 
         <!-- Right -->
         <template #right>
-          <UButton :to="{ name: ROUTES.DECKS.children.createCard.name }" icon="i-lucide-plus" color="neutral" variant="ghost">
-            Добавить карточку
-            <UKbd>alt + n</UKbd>
-          </UButton>
+          <UTooltip text="Добавить карточку" :kbds="['alt', 'n']">
+            <UButton
+              square
+              :to="{ name: ROUTES.DECKS.children.createCard.name }"
+              icon="i-lucide-book-plus"
+              color="neutral"
+              variant="ghost"
+            />
+          </UTooltip>
 
           <!-- Archive -->
           <UTooltip text="Архивировать">
@@ -216,7 +220,13 @@ defineShortcuts({
 
           <!-- Repetition -->
           <UTooltip :text="cardsForDue.length ? 'Начать повторение' : 'Нет карточек для повторения'">
-            <UButton color="neutral" icon="i-lucide-repeat" :disabled="!cardsForDue.length" @click="openRepetitionModal" />
+            <UButton
+              label="Учить"
+              color="neutral"
+              icon="i-lucide-graduation-cap"
+              :disabled="!cardsForDue.length"
+              @click="openRepetitionModal"
+            />
           </UTooltip>
           <!-- Repetition -->
         </template>
